@@ -8,10 +8,10 @@ import (
 )
 
 //StaticPath is path that save the static file
-var StaticPath = "C:\\Users\\zhang\\go\\src\\github.com\\MapleFadeAway\\timeline\\static"
+var StaticPath = "C:\\Users\\Surface\\go\\src\\github.com\\Casxt\\TimeLine\\static"
 
-//Get return the builted html
-func Get(name string) (Page []byte, err error) {
+//GetPage return the builted html
+func GetPage(name string) (Page []byte, err error) {
 	var absPath string
 	var content []byte
 

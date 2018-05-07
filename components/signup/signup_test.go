@@ -1,9 +1,9 @@
-package api
+package signup
 
 import (
 	"testing"
 
-	"github.com/MapleFadeAway/timeline/database"
+	"github.com/Casxt/TimeLine/database"
 )
 
 func TestSignUp(t *testing.T) {

@@ -7,7 +7,7 @@ import (
 	"log"
 	"math/big"
 
-	"github.com/MapleFadeAway/timeline/mail"
+	"github.com/Casxt/TimeLine/mail"
 )
 
 //{'asdd','asdsadas'}
@@ -44,7 +44,7 @@ func CreateUser(Phone string, Mail string, HashPass string) (err error) {
 	sqlCmd := "INSERT INTO User (`Phone`,`Mail`,`NickName`,`Salt`,`SaltPass`) VALUES (?,?,?,?,?)"
 	_, err = course.Exec(sqlCmd, Phone, Mail, "Unverify User", Salt, HashSaltPass)
 	if err != nil {
-		log.Fatalln("CreateUser error:", err)
+		log.Println("CreateUser:", err)
 		return err
 	}
 

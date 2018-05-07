@@ -1,23 +1,25 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"strings"
 
-	"github.com/MapleFadeAway/timeline/api"
-	"github.com/MapleFadeAway/timeline/database"
-	"github.com/MapleFadeAway/timeline/page"
+	"github.com/Casxt/TimeLine/api"
+	"github.com/Casxt/TimeLine/components/signup"
+	"github.com/Casxt/TimeLine/database"
 )
 
 func route(res http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
-
+	req.ParseForm()
+	fmt.Println(req.PostForm)
 	switch {
 	case strings.HasPrefix(path, "/api"):
 		api.Route(res, req)
 	case strings.HasPrefix(path, "/SignUp"):
-		page.Route(res, req)
+		signup.Route(res, req)
 	default:
 		//不要为首页创建专门的判断，所有的首页都应该被默认展示
 		res.Write([]byte("TimeLine!"))
