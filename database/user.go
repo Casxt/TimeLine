@@ -6,16 +6,13 @@ import (
 	"encoding/hex"
 	"log"
 	"math/big"
-
-	"github.com/Casxt/TimeLine/mail"
 )
 
-//{'asdd','asdsadas'}
 //CreateUser create a unverify user
-func CreateUser(Phone string, Mail string, HashPass string) (err error) {
+func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, err error) {
 	course, selfCourse, err := Begin(nil)
 	if err != nil {
-		return err
+		return "", "", err
 	}
 	defer GraceCommit(course, selfCourse, err)
 	//随机
@@ -24,19 +21,13 @@ func CreateUser(Phone string, Mail string, HashPass string) (err error) {
 	Hash256 := sha256.New()
 	Hash256.Write([]byte(rnd.String()))
 	Salt := hex.EncodeToString(Hash256.Sum(nil))
-
 	if HashPass == "" {
 		//计算一个初始的随机pass并Hash
-		Pass := Phone + rnd.String()
+		Pass = rnd.String()
 		Hash256.Reset()
 		Hash256.Write([]byte(Pass))
 		HashPass = hex.EncodeToString(Hash256.Sum(nil))
-		mail.SendMail(Mail, "TimeLine 注册验证", "<h1>TimeLine密码:"+Pass+"</h1>", nil)
-	} else {
-		//计算一个初始的随机pass
-		mail.SendMail(Mail, "TimeLine 注册验证", "<h1>您已注册TimeLine</h1>", nil)
 	}
-
 	//HashSaltPass
 	Hash256.Reset()
 	Hash256.Write([]byte(Salt + HashPass))
@@ -45,8 +36,8 @@ func CreateUser(Phone string, Mail string, HashPass string) (err error) {
 	_, err = course.Exec(sqlCmd, Phone, Mail, "Unverify User", Salt, HashSaltPass)
 	if err != nil {
 		log.Println("CreateUser:", err)
-		return err
+		return "", "", err
 	}
 
-	return err
+	return "Unverify User", Pass, err
 }

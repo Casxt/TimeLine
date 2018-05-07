@@ -8,7 +8,7 @@
         <input type="email" id="inputEmail" name="Mail" class="form-control mt-3" placeholder="Email address" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
         <input type="password" id="inputPassword" name="Password" class="form-control mt-3" placeholder="Password(非必填)" required>
-        <button class="btn btn-lg btn-primary btn-block mt-5 " type="button" onclick="SingnIn()">Sign in</button>
+        <button id="SignUp-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnIn()">Sign in</button>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
     </form>
 </main>
@@ -19,10 +19,13 @@
         xhr.timeout = 3000;
         xhr.responseType = "json";
         xhr.open('POST', '/api/SignUp', true);
-        xhr.onload = function(e) { 
-            //if(this.State == "Success"){
-                alert(this.response.State);
-            //}
+        xhr.onloadend = function(e) { 
+            JsonResponse = xhr.response;
+            if(JsonResponse.State == "Success"){
+                AlertButton("SignUp-Button", "btn-success btn btn-lg btn-block mt-5 disabled", JsonResponse.Msg, 1000);
+            }else{
+                AlertButton("SignUp-Button", "btn-warning btn btn-lg btn-block mt-5 disabled", JsonResponse.Msg, 3000);
+            }
         };
         /*
         xhr.ontimeout = function(e) { ... };
@@ -31,7 +34,7 @@
         */
         //发送数据
         xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhr.send(urlencodeFormData(formData));
+        xhr.send(formData.urlencode());
     };
 </script>
 <!-- /.container -->

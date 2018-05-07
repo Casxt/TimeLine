@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strings"
@@ -18,19 +19,26 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	}
 	//api路由
 	subPath := req.URL.Path[5:] //url are like /api/(something)
-	var jsonRes []byte
+	var jsonRes map[string]string
 	var resCode int
 	switch {
 	case strings.HasPrefix(subPath, "SignUp"):
 		resCode, jsonRes = signup.SignUp(req)
-	case strings.HasPrefix(subPath, "a"):
-		resCode = 200
-		jsonRes = []byte("asdasdsa")
 	default:
 		resCode = 200
 		http.SetCookie(res, &http.Cookie{Name: "testcookiename2", Value: "testcookievalue", Path: "/", MaxAge: 86400})
-		jsonRes = []byte("Add Cookie")
+		jsonRes = map[string]string{
+			"State": "Succesful",
+			"Msg":   "Create User Successful",
+		}
 	}
+
+	result, err := json.Marshal(jsonRes)
+
+	if err != nil {
+		log.Println(err)
+	}
+
 	res.WriteHeader(resCode)
-	res.Write(jsonRes)
+	res.Write(result)
 }
