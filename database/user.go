@@ -6,7 +6,33 @@ import (
 	"encoding/hex"
 	"log"
 	"math/big"
+	"time"
 )
+
+//GetUserByPhone Found User By Phone
+func GetUserByPhone(Phone string) (Mail, Pass, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, err error) {
+	course, selfCourse, err := Begin(nil)
+	if err != nil {
+		return "", "", "", "", "", "", time.Time{}, err
+	}
+
+	defer GraceCommit(course, selfCourse, err)
+
+	sqlCmd := "SELECT `Mail`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Phone`=?"
+	Row := course.QueryRow(sqlCmd, Phone)
+
+	if err = Row.Scan(&Mail, &Pass, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); err != nil {
+		switch err.Error() {
+		case "no rows in result set":
+			return "", "", "", "", "", "", time.Time{}, err
+		default:
+			log.Println(err.Error())
+			return "", "", "", "", "", "", time.Time{}, err
+		}
+	}
+
+	return Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime, err
+}
 
 //CreateUser create a unverify user
 func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, err error) {
