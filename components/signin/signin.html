@@ -1,24 +1,21 @@
 <main role="main" class="container text-center">
-    <form id="SignUp-Form" enctype="value" class="" style="width: 100%;max-width: 330px; padding: 15px;margin: auto;">
+    <form id="SignIn-Form" enctype="value" class="" style="width: 100%;max-width: 330px; padding: 15px;margin: auto;">
         <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
-        <h1 class="h3 mb-3 font-weight-normal mt-3">Sign Up</h1>
-        <label for="inputPhone" class="sr-only">Email address</label>
-        <input type="tel" id="inputPhone" name="Phone" class="form-control mt-3" placeholder="Phone Number" required autofocus>
-        <label for="inputEmail" class="sr-only">Email address</label>
-        <input type="email" id="inputEmail" name="Mail" class="form-control mt-3" placeholder="Email address" required autofocus>
-        <label for="inputPassword" class="sr-only">Password</label>
+        <h1 class="h3 mb-3 font-weight-normal mt-3">Sign In</h1>
+        <label for="inputPhone" class="sr-only">Account</label>
+        <input type="tel" id="inputPhone" name="Phone" class="form-control mt-3" placeholder="Mail or Phone" required autofocus>
+        <label for="inputPassword" class="sr-only disable">Password</label>
         <input type="password" id="inputPassword" name="Password" class="form-control mt-3" placeholder="Password(非必填)" required>
-        <button id="SignUp-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnIn()">Sign in</button>
-        <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
+        <button id="SignIn-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnIn()">Next Step</button>
     </form>
 </main>
 <script type="text/javascript">
     function SingnIn() {
-        var formData = new FormData(document.getElementById("SignUp-Form"));
+        var formData = new FormData(document.getElementById("SignIn-Form"));
         var xhr = new XMLHttpRequest();
         xhr.timeout = 3000;
         xhr.responseType = "json";
-        xhr.open('POST', '/api/SignUp', true);
+        xhr.open('POST', '/api/SignIn', true);
         xhr.onloadend = function(e) { 
             JsonResponse = xhr.response;
             if(JsonResponse.State == "Success"){

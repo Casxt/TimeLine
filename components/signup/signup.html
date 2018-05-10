@@ -2,24 +2,30 @@
     <form id="SignUp-Form" enctype="value" class="" style="width: 100%;max-width: 330px; padding: 15px;margin: auto;">
         <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal mt-3">Sign Up</h1>
-        <label for="inputPhone" class="sr-only">Email address</label>
+        <label for="inputPhone" class="sr-only">Phone Number</label>
         <input type="tel" id="inputPhone" name="Phone" class="form-control mt-3" placeholder="Phone Number" required autofocus>
         <label for="inputEmail" class="sr-only">Email address</label>
         <input type="email" id="inputEmail" name="Mail" class="form-control mt-3" placeholder="Email address" required autofocus>
         <label for="inputPassword" class="sr-only">Password</label>
         <input type="password" id="inputPassword" name="Password" class="form-control mt-3" placeholder="Password(非必填)" required>
-        <button id="SignUp-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnIn()">Sign in</button>
+        <button id="SignUp-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnUp()">Sign in</button>
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
     </form>
 </main>
 <script type="text/javascript">
-    function SingnIn() {
+    function SingnUp() {
         var formData = new FormData(document.getElementById("SignUp-Form"));
         var xhr = new XMLHttpRequest();
         xhr.timeout = 3000;
         xhr.responseType = "json";
         xhr.open('POST', '/api/SignUp', true);
+        xhr.onloadstart = function(e) { 
+            $("#SignUp-Button").addClass("disabled");
+            $("#SignUp-Button").attr("rawinner",$("#SignUp-Button").innerHtml());
+        };
         xhr.onloadend = function(e) { 
+            $("#SignUp-Button").removeClass("disabled");
+            
             JsonResponse = xhr.response;
             if(JsonResponse.State == "Success"){
                 AlertButton("SignUp-Button", "btn-success btn btn-lg btn-block mt-5 disabled", JsonResponse.Msg, 1000);

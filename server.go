@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Casxt/TimeLine/api"
+	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
@@ -16,6 +17,8 @@ func route(res http.ResponseWriter, req *http.Request) {
 	switch {
 	case strings.HasPrefix(strings.ToLower(path), "/api"):
 		api.Route(res, req)
+	case strings.HasPrefix(strings.ToLower(path), "/signin"):
+		signin.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/signup"):
 		signup.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/static"):

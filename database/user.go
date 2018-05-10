@@ -4,43 +4,71 @@ import (
 	"crypto/rand"
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"log"
 	"math/big"
 	"time"
 )
 
-//GetUserByPhone Found User By Phone
-func GetUserByPhone(Phone string) (Mail, Pass, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, err error) {
-	course, selfCourse, err := Begin(nil)
-	if err != nil {
-		return "", "", "", "", "", "", time.Time{}, err
+//GetUserByMail Found User By Mail
+func GetUserByMail(Mail string) (Phone, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
+	course, selfCourse, DBErr := Begin(nil)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return "", "", "", "", "", "", time.Time{}, errors.New("DataBase Connection Error")
+	}
+	defer GraceCommit(course, selfCourse, DBErr)
+
+	sqlCmd := "SELECT `Phone`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Mail`=?"
+	Row := course.QueryRow(sqlCmd, Mail)
+
+	if DBErr = Row.Scan(&Phone, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
+		switch DBErr.Error() {
+		case "no rows in result set":
+			return "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
+		default:
+			log.Println(DBErr.Error())
+			return "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
+		}
 	}
 
-	defer GraceCommit(course, selfCourse, err)
+	return Mail, NickName, Gender, Salt, SaltPass, ProfilePic, SignInTime, nil
+}
+
+//GetUserByPhone Found User By Phone
+func GetUserByPhone(Phone string) (Mail, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
+	course, selfCourse, DBErr := Begin(nil)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return "", "", "", "", "", "", time.Time{}, errors.New("DataBase Connection Error")
+	}
+	defer GraceCommit(course, selfCourse, DBErr)
 
 	sqlCmd := "SELECT `Mail`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Phone`=?"
 	Row := course.QueryRow(sqlCmd, Phone)
 
-	if err = Row.Scan(&Mail, &Pass, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); err != nil {
-		switch err.Error() {
+	if DBErr = Row.Scan(&Mail, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
+		switch DBErr.Error() {
 		case "no rows in result set":
-			return "", "", "", "", "", "", time.Time{}, err
+			return "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
 		default:
-			log.Println(err.Error())
-			return "", "", "", "", "", "", time.Time{}, err
+			log.Println(DBErr.Error())
+			return "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
 		}
 	}
 
-	return Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime, err
+	return Mail, NickName, Gender, Salt, SaltPass, ProfilePic, SignInTime, nil
 }
 
 //CreateUser create a unverify user
-func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, err error) {
-	course, selfCourse, err := Begin(nil)
-	if err != nil {
-		return "", "", err
+func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, ErrorMsg error) {
+	course, selfCourse, DBErr := Begin(nil)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return "", "", errors.New("DataBase Connection Error")
 	}
-	defer GraceCommit(course, selfCourse, err)
+	defer GraceCommit(course, selfCourse, DBErr)
+
 	//随机
 	rnd, _ := rand.Int(rand.Reader, big.NewInt(1<<63-1))
 	//计算一个初始的随机salt
@@ -59,11 +87,11 @@ func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, err error)
 	Hash256.Write([]byte(Salt + HashPass))
 	HashSaltPass := hex.EncodeToString(Hash256.Sum(nil))
 	sqlCmd := "INSERT INTO User (`Phone`,`Mail`,`NickName`,`Salt`,`SaltPass`) VALUES (?,?,?,?,?)"
-	_, err = course.Exec(sqlCmd, Phone, Mail, "Unverify User", Salt, HashSaltPass)
-	if err != nil {
-		log.Println("CreateUser:", err)
-		return "", "", err
+	_, DBErr = course.Exec(sqlCmd, Phone, Mail, "Unverify User", Salt, HashSaltPass)
+	if DBErr != nil {
+		log.Println("CreateUser:", DBErr.Error())
+		return "", "", errors.New("User SignIn Failde")
 	}
 
-	return "Unverify User", Pass, err
+	return "Unverify User", Pass, nil
 }
