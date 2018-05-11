@@ -1,8 +1,8 @@
 package signup
 
 import (
+	"encoding/json"
 	"net/http"
-	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/mail"
@@ -26,45 +26,64 @@ func Route(res http.ResponseWriter, req *http.Request) {
 //SignUp is a api interface, will signup a user
 func SignUp(req *http.Request) (status int, jsonRes map[string]string) {
 
-	Phone := req.PostFormValue("Phone")
-	Mail := req.PostFormValue("Mail")
-	HashPass := req.PostFormValue("HashPass")
+	type SignUpData struct {
+		Phone    string `json:"Phone"`
+		Mail     string `json:"Mail"`
+		HashPass string `json:"HashPass"`
+	}
+	var data SignUpData
+	err := json.NewDecoder(req.Body).Decode(&data)
+	if err != nil {
+		status = 400
+		jsonRes = map[string]string{
+			"State": "Failde",
+			"Msg":   "Invilde Json bytes or parmeter not enough",
+		}
+		return status, jsonRes
+	}
 
-	if Phone == "" || Mail == "" {
+	if data.Phone == "" || data.Mail == "" {
 		//参数错误
 		status = 400
 		jsonRes = map[string]string{
 			"State": "Failde",
 			"Msg":   "Invilde Parameter",
 		}
-	}
-
-	_, Pass, err := database.CreateUser(Phone, Mail, HashPass)
-	if err != nil {
-		//内部错误
-		if strings.HasPrefix(err.Error(), "Error 1062: Duplicate entry") {
-			status = 409
-			jsonRes = map[string]string{
-				"State": "Failde",
-				"Msg":   "User Name Already Be Taken",
-			}
-		} else {
-			status = 500
-			jsonRes = map[string]string{
-				"State": "Failde",
-				"Msg":   err.Error(),
-			}
-		}
-
 		return status, jsonRes
 	}
 
-	if HashPass == "" {
+	_, Pass, err := database.CreateUser(data.Phone, data.Mail, data.HashPass)
+	if err != nil {
+		//内部错误
+		switch err.Error() {
+		case "User Already Exist":
+			status = 409
+			jsonRes = map[string]string{
+				"State": "Failde",
+				"Msg":   "User Phone or Mail Already Be Taken",
+			}
+		case "User Create Failde":
+			status = 409
+			jsonRes = map[string]string{
+				"State": "Failde",
+				"Msg":   "Unknow Signup Error",
+			}
+		default:
+			status = 500
+			jsonRes = map[string]string{
+				"State": "Failde",
+				"Msg":   "Unknow Signup Error",
+			}
+		}
+		return status, jsonRes
+	}
+
+	if data.HashPass == "" {
 		//计算一个初始的随机pass并Hash
-		mail.SendMail(Mail, "TimeLine 注册验证", "<h1>TimeLine密码:"+Pass+"</h1>", nil)
+		mail.SendMail(data.Mail, "TimeLine 注册验证", "<h1>TimeLine密码:"+Pass+"</h1>", nil)
 	} else {
 		//计算一个初始的随机pass
-		mail.SendMail(Mail, "TimeLine 注册验证", "<h1>您已注册TimeLine</h1>", nil)
+		mail.SendMail(data.Mail, "TimeLine 注册验证", "<h1>您已注册TimeLine</h1>", nil)
 	}
 
 	jsonRes = map[string]string{

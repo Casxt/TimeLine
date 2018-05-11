@@ -12,35 +12,27 @@
         <p class="mt-5 mb-3 text-muted">&copy; 2017-2018</p>
     </form>
 </main>
-<script type="text/javascript">
-    function SingnUp() {
-        var formData = new FormData(document.getElementById("SignUp-Form"));
-        var xhr = new XMLHttpRequest();
-        xhr.timeout = 3000;
-        xhr.responseType = "json";
-        xhr.open('POST', '/api/SignUp', true);
-        xhr.onloadstart = function(e) { 
-            $("#SignUp-Button").addClass("disabled");
-            $("#SignUp-Button").attr("rawinner",$("#SignUp-Button").innerHtml());
-        };
-        xhr.onloadend = function(e) { 
-            $("#SignUp-Button").removeClass("disabled");
-            
-            JsonResponse = xhr.response;
-            if(JsonResponse.State == "Success"){
-                AlertButton("SignUp-Button", "btn-success btn btn-lg btn-block mt-5 disabled", JsonResponse.Msg, 1000);
-            }else{
-                AlertButton("SignUp-Button", "btn-warning btn btn-lg btn-block mt-5 disabled", JsonResponse.Msg, 3000);
-            }
-        };
-        /*
-        xhr.ontimeout = function(e) { ... };
-        xhr.onerror = function(e) { ... };
-        xhr.upload.onprogress = function(e) { ... };
-        */
-        //发送数据
-        xhr.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
-        xhr.send(formData.urlencode());
+<script type="module" type="text/javascript">
+    import * as TimeLine from "/static/js/TimeLine.js";
+    async function SingnUp() {
+        const formData = new FormData(document.getElementById("SignUp-Form"));
+        let Data = formData.ToArray()
+        if (Data.Password === "" || Data.Password === null || Data.Password === undefined){
+            Data.HashPass = "";
+        }
+        const B = new AnimeButton("SignUp-Button");
+
+        const Closer = B.OnLoding("disabled", "Signing...");
+
+        const json = await JsonRequest('POST', '/api/SignUp', Data)
+
+        Closer();
+
+        if (json.State == "Success") {
+            B.Alert("SignUp-Button", "btn-success btn btn-lg btn-block mt-5 disabled", json.Msg, 1000);
+        } else {
+            B.Alert("SignUp-Button", "btn-warning btn btn-lg btn-block mt-5 disabled", json.Msg, 3000);
+        }
     };
 </script>
 <!-- /.container -->

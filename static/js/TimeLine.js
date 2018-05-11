@@ -9,23 +9,28 @@ FormData.prototype.urlencode = function () {
     return params.toString();
 }
 /**
- * AlertButton use Button to show some info, 
- * but it can be use not only for button
- * @param {*} Id the Id of Button
- * @param {*} className the temp className of Button
- * @param {*} innerHTML the temp innerHtml of Button
- * @param {*} delay after delay ms the button will flash back 
+ * ToArray Trans A FormData to Array
+ * @param {*} args 
  */
-function AlertButton(Id, className, innerHTML, delay) {
-    let OldclassName = document.getElementById(Id).className
-    let OldinnerHTML = document.getElementById(Id).innerHTML
-    
-    document.getElementById(Id).className = className;
-    document.getElementById(Id).innerHTML = innerHTML;
-
-    setTimeout("document.getElementById(\"{Id}\").className = \"{OldclassName}\"".format({"Id":Id,"OldclassName":OldclassName}),delay);
-    setTimeout("document.getElementById(\"{Id}\").innerHTML = \"{OldinnerHTML}\"".format({"Id":Id,"OldinnerHTML":OldinnerHTML}),delay);
+FormData.prototype.ToArray = function (args) {
+    let Data = {};
+    this.forEach((value, key) => Data[key] = value);
+    return Data;
 }
+
+async function JsonRequest(httpmethod, url, data){
+    const request = new Request(url, {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method: httpmethod,
+        body: JSON.stringify(data),
+    });
+    const response = await fetch(request);
+    return await response.json();
+}
+
 
 /*
 String format Space Start
@@ -44,15 +49,56 @@ String.prototype.format = function (args) {
                     result = result.replace(reg, args[key]);
                 }
             }
-        }
-        else {
+        } else {
             for (var i = 0; i < arguments.length; i++) {
-                if (arguments[i] != undefined) {
-                    　　　　　　　　　　　　var reg = new RegExp("({)" + i + "(})", "g");
+                if (arguments[i] != undefined) {　　　　　　　　　　　　
+                    var reg = new RegExp("({)" + i + "(})", "g");
                     result = result.replace(reg, arguments[i]);
                 }
             }
         }
     }
     return result;
+}
+
+
+
+class AnimeButton {
+    constructor(buttonId) {
+        this.buttonId = buttonId;
+        this.button = document.getElementById(buttonId);
+        this.jqButton = $("#" + buttonId);
+    }
+    /**
+     * Alert use Button to show some info, 
+     * but it can be use not only for button
+     * @param {*} Id the Id of Button
+     * @param {*} className the temp className of Button
+     * @param {*} innerHTML the temp innerHtml of Button
+     * @param {*} delay after delay ms the button will flash back 
+     */
+
+    OnLoding(className, innerHTML) {
+        this.jqButton.addClass(className);
+        const OldHtml = this.button.innerHTML
+
+        this.button.innerHTML = innerHTML;
+        return () => {
+            this.jqButton.removeClass(className);
+            this.button.innerHTML = OldHtml;
+        }
+    }
+
+    Alert(Id, className, innerHTML, delay) {
+        const OldclassName = this.button.className
+        const OldinnerHTML = this.button.innerHTML
+
+        this.button.className = className;
+        this.button.innerHTML = innerHTML;
+
+        setTimeout(() => {
+            this.button.className = OldclassName;
+            this.button.innerHTML = OldinnerHTML;
+        }, delay);
+    }
 }

@@ -7,6 +7,7 @@ import (
 	"errors"
 	"log"
 	"math/big"
+	"strings"
 	"time"
 )
 
@@ -89,8 +90,14 @@ func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, ErrorMsg e
 	sqlCmd := "INSERT INTO User (`Phone`,`Mail`,`NickName`,`Salt`,`SaltPass`) VALUES (?,?,?,?,?)"
 	_, DBErr = course.Exec(sqlCmd, Phone, Mail, "Unverify User", Salt, HashSaltPass)
 	if DBErr != nil {
-		log.Println("CreateUser:", DBErr.Error())
-		return "", "", errors.New("User SignIn Failde")
+		switch {
+		case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):
+			return "", "", errors.New("User Already Exist")
+		default:
+			log.Println("CreateUser:", DBErr.Error())
+			return "", "", errors.New("User Create Failde")
+		}
+
 	}
 
 	return "Unverify User", Pass, nil

@@ -14,14 +14,15 @@ import (
 func Route(res http.ResponseWriter, req *http.Request) {
 
 	//解析get和post字串
-	if err := req.ParseForm(); err != nil {
-		log.Println(err.Error())
-		return
-	}
+	//if err := req.ParseForm(); err != nil {
+	//	log.Println(err.Error())
+	//	return
+	//}
 	//api路由
 	subPath := req.URL.Path[5:] //url are like /api/(something)
 	var jsonRes map[string]string
 	var resCode int
+
 	switch {
 	case strings.HasPrefix(subPath, "SignUp"):
 		resCode, jsonRes = signup.SignUp(req)
@@ -32,7 +33,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		//http.SetCookie(res, &http.Cookie{Name: "testcookiename2", Value: "testcookievalue", Path: "/", MaxAge: 86400})
 		jsonRes = map[string]string{
 			"State": "Succesful",
-			"Msg":   "Create User Successful",
+			"Msg":   "test Successful",
 		}
 	}
 
