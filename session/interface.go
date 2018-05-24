@@ -4,8 +4,8 @@ import (
 	"time"
 )
 
-//IO Interface
-type IO interface {
+//SessionIO Interface
+type SessionIO interface {
 	Manager
 	Reader
 	Writer
@@ -13,24 +13,25 @@ type IO interface {
 
 //Manager Interface
 type Manager interface {
-	New(sessionID string) *Session
-	ExpireTime(time int) int
+	ExpireTime(expireTime time.Duration) time.Duration
+	expired() bool
+	refresh()
 }
 
 //Writer Interface
 type Writer interface {
-	Put(key, value string) error
-	PutInt(key string, value int) error
-	PutTime(key string, value time.Time) error
+	Put(key, value string)
+	PutInt(key string, value int)
+	PutTime(key string, value time.Time)
 
-	PutAll(sessionKV map[string]string) error
+	PutAll(sessionKV map[string]interface{})
 }
 
 //Reader Interface
 type Reader interface {
-	Get(key string) string
-	GetInt(key string) int
-	GetTime(key string) time.Time
+	Get(key string) (string, bool)
+	GetInt(key string) (int, bool)
+	GetTime(key string) (time.Time, bool)
 
-	GetAll() map[string]string
+	GetAll() map[string]interface{}
 }
