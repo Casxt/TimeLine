@@ -1,8 +1,10 @@
 package signin
 
 import (
+	"encoding/json"
 	"net/http"
 	"regexp"
+	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
@@ -12,11 +14,14 @@ import (
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
-	switch req.Method {
-	case "GET":
-		status, result = Page()
+
+	subPath := req.URL.Path[7:]
+	switch {
+	case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
+		result, status, _ = page.GetFile("components", "signin", "signup.js")
 	default:
-		status, result = Page()
+		result, status, _ = page.GetPage("components", "signin", "signin.html")
+
 	}
 	res.WriteHeader(status)
 	res.Write(result)
@@ -25,18 +30,30 @@ func Route(res http.ResponseWriter, req *http.Request) {
 //CheckAccount is a Api interface
 //the first step of sign in is check the account
 func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
-	Account := req.PostFormValue("Account")
+	var Salt string
+	var err error
+	type Data struct {
+		Account string `json:"Account"`
+	}
+	var data Data
+	err = json.NewDecoder(req.Body).Decode(&data)
+	if err != nil || data.Account == "" {
+		status = 400
+		jsonRes = map[string]string{
+			"State": "Failde",
+			"Msg":   "Invilde Json bytes or parmeter not enough",
+		}
+		return status, jsonRes
+	}
 
 	mailRegexp := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	phoneRegexp := regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
-
-	var Salt string
-	var err error
+	var NickName string
 	switch {
-	case mailRegexp.MatchString(Account):
-		_, _, _, Salt, _, _, _, err = database.GetUserByPhone(Account)
-	case phoneRegexp.MatchString(Account):
-		_, _, _, Salt, _, _, _, err = database.GetUserByMail(Account)
+	case phoneRegexp.MatchString(data.Account):
+		_, NickName, _, Salt, _, _, _, err = database.GetUserByPhone(data.Account)
+	case mailRegexp.MatchString(data.Account):
+		_, NickName, _, Salt, _, _, _, err = database.GetUserByMail(data.Account)
 	default:
 		//不匹配邮箱或电话
 		jsonRes = map[string]string{
@@ -66,20 +83,10 @@ func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
 	}
 
 	jsonRes = map[string]string{
-		"State": "Success",
-		"Msg":   "User Account Exist",
-		"Salt":  Salt,
+		"State":    "Success",
+		"Msg":      "User Account Exist",
+		"NickName": NickName,
+		"Salt":     Salt,
 	}
 	return 200, jsonRes
-}
-
-//Page will create the signin page
-func Page() (status int, res []byte) {
-	var err error
-	res, err = page.GetPage("components", "signin", "signin.html")
-	if err != nil {
-		res, _ = page.GetPage("404.html")
-		return 404, res
-	}
-	return 200, res
 }

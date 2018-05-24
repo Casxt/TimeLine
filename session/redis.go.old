@@ -1,0 +1,87 @@
+package session
+
+import (
+	"errors"
+	"log"
+	"time"
+
+	"github.com/gomodule/redigo/redis"
+)
+
+var (
+	password    = "TimeLineRedis"
+	redisServer = "sh2.casxt.com:6379"
+	db          = 0
+	pool        *redis.Pool
+	//SessionTimeOut s	  m	   h	d
+	SessionTimeOut = 60 * 60 * 24 * 30
+)
+
+//Open startup the redis session
+func OpenRedis() {
+	pool = &redis.Pool{
+		MaxIdle:     64,
+		IdleTimeout: 240 * time.Second,
+		Dial: func() (redis.Conn, error) {
+			c, err := redis.Dial("tcp", redisServer)
+			if err != nil {
+				return nil, err
+			}
+			if _, err := c.Do("AUTH", password); err != nil {
+				c.Close()
+				return nil, err
+			}
+			if _, err := c.Do("SELECT", db); err != nil {
+				c.Close()
+				return nil, err
+			}
+			return c, nil
+		},
+		TestOnBorrow: func(c redis.Conn, t time.Time) error {
+			if time.Since(t) < time.Minute {
+				return nil
+			}
+			_, err := c.Do("PING")
+			return err
+		},
+	}
+}
+
+//Set some emelent to already exit session id
+//first arg should be sessionid and then fllow at least one pair of key-value
+//if set to a new session , sessionid should be nil
+func Set(Args ...interface{}) (err error) {
+	// Check Parmeters
+	//Args[0] ID
+	_, isString := Args[0].(string)
+
+	if Args[0] == nil {
+		Args[0] = newID()
+	}
+
+	if !isString || Args[0] == "" || len(Args)%2 != 1 || len(Args) < 3 {
+		panic("Parmeters error")
+	}
+
+	conn := pool.Get()
+	defer conn.Close()
+
+	//Check ID
+	exists, err := redis.Bool(conn.Do("EXISTS", Args[0]))
+	if err != nil {
+		log.Println(err.Error())
+		return errors.New("Conn Err")
+	}
+	if !exists {
+		return errors.New("Session not exist")
+	}
+
+	conn.Send("HSET", Args...)
+	_, err = conn.Do("EXPIRE", Args[0], SessionTimeOut)
+	if err != nil {
+		log.Println(err.Error())
+		return errors.New("Set Err")
+	}
+
+	return nil
+}

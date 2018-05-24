@@ -3,6 +3,7 @@ package signup
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/mail"
@@ -13,11 +14,16 @@ import (
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
-	switch req.Method {
-	case "GET":
-		status, result = Page()
+
+	subPath := req.URL.Path[7:]
+
+	switch {
+	case strings.HasSuffix(strings.ToLower(subPath), "signup.js"):
+		result, status, _ = page.GetFile("components", "signup", "signup.js")
+		res.Header().Add("Content-Type", "application/x-javascript")
 	default:
-		status, result = Page()
+		result, status, _ = page.GetPage("components", "signup", "signup.html")
+
 	}
 	res.WriteHeader(status)
 	res.Write(result)
@@ -26,12 +32,12 @@ func Route(res http.ResponseWriter, req *http.Request) {
 //SignUp is a api interface, will signup a user
 func SignUp(req *http.Request) (status int, jsonRes map[string]string) {
 
-	type SignUpData struct {
+	type Data struct {
 		Phone    string `json:"Phone"`
 		Mail     string `json:"Mail"`
 		HashPass string `json:"HashPass"`
 	}
-	var data SignUpData
+	var data Data
 	err := json.NewDecoder(req.Body).Decode(&data)
 	if err != nil {
 		status = 400
@@ -92,15 +98,4 @@ func SignUp(req *http.Request) (status int, jsonRes map[string]string) {
 	}
 
 	return 200, jsonRes
-}
-
-//Page will create the signup page
-func Page() (status int, res []byte) {
-	var err error
-	res, err = page.GetPage("components", "signup", "signup.html")
-	if err != nil {
-		res, _ = page.GetPage("404.html")
-		return 404, res
-	}
-	return 200, res
 }

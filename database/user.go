@@ -25,7 +25,7 @@ func GetUserByMail(Mail string) (Phone, NickName, Gender, Salt, SaltPass, Profil
 
 	if DBErr = Row.Scan(&Phone, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
 		switch DBErr.Error() {
-		case "no rows in result set":
+		case "sql: no rows in result set":
 			return "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
 		default:
 			log.Println(DBErr.Error())
@@ -50,7 +50,7 @@ func GetUserByPhone(Phone string) (Mail, NickName, Gender, Salt, SaltPass, Profi
 
 	if DBErr = Row.Scan(&Mail, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
 		switch DBErr.Error() {
-		case "no rows in result set":
+		case "sql: no rows in result set":
 			return "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
 		default:
 			log.Println(DBErr.Error())

@@ -24,3 +24,14 @@ func TestGetUserByPhone(t *testing.T) {
 	}
 	t.Log(Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime)
 }
+
+func Testt(t *testing.T) {
+	t.Error("asd")
+	func(value interface{}, t *testing.T) {
+		if res, ok := value.(string); ok {
+			t.Error(res)
+		} else {
+			t.Error(res)
+		}
+	}("asdsad", t)
+}

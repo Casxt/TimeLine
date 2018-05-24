@@ -89,7 +89,7 @@ class AnimeButton {
         }
     }
 
-    Alert(Id, className, innerHTML, delay) {
+    Alert(className, innerHTML, delay) {
         const OldclassName = this.button.className
         const OldinnerHTML = this.button.innerHTML
 
