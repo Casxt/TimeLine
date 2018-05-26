@@ -1,6 +1,7 @@
 package session
 
 import (
+	"net/http"
 	"time"
 )
 
@@ -12,9 +13,10 @@ func Open() {
 	sessionMap = make(map[string]SessionIO)
 }
 
-func New() SessionIO {
+func New(req *http.Request) SessionIO {
 	session := new(Session)
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
+	session.Map["RemoteAddr"] = req.RemoteAddr
 	session.sessionID = newID()
 	count := 0
 
@@ -28,5 +30,20 @@ func New() SessionIO {
 	}
 
 	sessionMap[session.sessionID] = session
+	return session
+}
+
+func Get(sessionID string, req *http.Request) SessionIO {
+	return check(sessionMap[sessionID], req)
+
+}
+
+func check(session SessionIO, req *http.Request) SessionIO {
+	if session.expired() {
+		return nil
+	}
+	if addr, _ := session.Get("RemoteAddr"); addr == req.RemoteAddr {
+		return nil
+	}
 	return session
 }

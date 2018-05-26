@@ -35,7 +35,7 @@ func (session Session) refresh() {
 }
 
 func (session Session) Get(key string) (res string, ok bool) {
-	if session.expired() {
+	if session.Map == nil {
 		return "", false
 	}
 	session.refresh()
@@ -44,7 +44,7 @@ func (session Session) Get(key string) (res string, ok bool) {
 }
 
 func (session Session) GetInt(key string) (res int, ok bool) {
-	if session.expired() {
+	if session.Map == nil {
 		return 0, false
 	}
 	session.refresh()
@@ -53,7 +53,7 @@ func (session Session) GetInt(key string) (res int, ok bool) {
 }
 
 func (session Session) GetTime(key string) (res time.Time, ok bool) {
-	if session.expired() {
+	if session.Map == nil {
 		return time.Time{}, false
 	}
 	session.refresh()
@@ -62,7 +62,7 @@ func (session Session) GetTime(key string) (res time.Time, ok bool) {
 }
 
 func (session Session) GetAll() map[string]interface{} {
-	if session.expired() {
+	if session.Map == nil {
 		return nil
 	}
 	session.refresh()
@@ -70,7 +70,7 @@ func (session Session) GetAll() map[string]interface{} {
 }
 
 func (session Session) Put(key string, value string) {
-	if session.expired() {
+	if session.Map == nil {
 		session.Map = make(map[string]interface{})
 	}
 	session.refresh()
@@ -78,7 +78,7 @@ func (session Session) Put(key string, value string) {
 }
 
 func (session Session) PutInt(key string, value int) {
-	if session.expired() {
+	if session.Map == nil {
 		session.Map = make(map[string]interface{})
 	}
 	session.refresh()
@@ -94,7 +94,7 @@ func (session Session) PutAll(Map map[string]interface{}) {
 }
 
 func (session Session) PutTime(key string, value time.Time) {
-	if session.expired() {
+	if session.Map == nil {
 		session.Map = make(map[string]interface{})
 	}
 	session.refresh()
