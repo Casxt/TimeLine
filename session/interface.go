@@ -13,7 +13,12 @@ type SessionIO interface {
 
 //Manager Interface
 type Manager interface {
+	Init(sessionID string)
 	ExpireTime(expireTime time.Duration) time.Duration
+	RLock()
+	RUnlock()
+	Lock()
+	Unlock()
 	expired() bool
 	refresh()
 }

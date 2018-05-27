@@ -2,6 +2,7 @@ package session
 
 import (
 	"net/http"
+	"sync"
 	"time"
 )
 
@@ -11,17 +12,17 @@ var (
 
 func Open() {
 	sessionMap = make(map[string]SessionIO)
+	mapLock := new(sync.RWMutex)
 }
 
 func New(req *http.Request) SessionIO {
-	session := new(Session)
-	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
-	session.Map["RemoteAddr"] = req.RemoteAddr
-	session.sessionID = newID()
+	var session SessionIO
+	var sessionID string
+	sessionID = newID()
 	count := 0
 
-	for sessionMap[session.sessionID] != nil && count < 3 {
-		session.sessionID = newID()
+	for sessionMap[sessionID] != nil && count < 3 {
+		sessionID = newID()
 		count++
 	}
 
@@ -29,13 +30,18 @@ func New(req *http.Request) SessionIO {
 		panic("too many key duplicate")
 	}
 
-	sessionMap[session.sessionID] = session
+	session.Lock()
+	session.Init(sessionID)
+	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
+	session.Put("RemoteAddr", req.RemoteAddr)
+	session.Unlock()
+
+	sessionMap[sessionID] = session
 	return session
 }
 
 func Get(sessionID string, req *http.Request) SessionIO {
 	return check(sessionMap[sessionID], req)
-
 }
 
 func check(session SessionIO, req *http.Request) SessionIO {
@@ -46,4 +52,15 @@ func check(session SessionIO, req *http.Request) SessionIO {
 		return nil
 	}
 	return session
+}
+
+func checkExpire(sessionMap map[string]SessionIO) {
+	for true {
+		for sessionID, session := range sessionMap {
+			if session.expired() {
+				delete(sessionMap, sessionID)
+				time.Sleep(time.Second)
+			}
+		}
+	}
 }

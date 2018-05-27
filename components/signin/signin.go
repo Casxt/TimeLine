@@ -1,13 +1,16 @@
 package signin
 
 import (
+	"crypto/rand"
 	"encoding/json"
+	"math/big"
 	"net/http"
 	"regexp"
 	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/session"
 )
 
 //Route Return The Page to Show
@@ -82,11 +85,23 @@ func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
 
 	}
 
+	s := session.New(req)
+	if s == nil {
+		jsonRes = map[string]string{
+			"State": "Failde",
+			"Msg":   "Session Create Filed",
+		}
+		return 500, jsonRes
+	}
+
+	rnd, _ := rand.Int(rand.Reader, big.NewInt(1<<63-1))
+	s.Put("SignInVerify", rnd.String())
 	jsonRes = map[string]string{
-		"State":    "Success",
-		"Msg":      "User Account Exist",
-		"NickName": NickName,
-		"Salt":     Salt,
+		"State":        "Success",
+		"Msg":          "User Account Exist",
+		"NickName":     NickName,
+		"Salt":         Salt,
+		"SignInVerify": rnd.String(),
 	}
 	return 200, jsonRes
 }

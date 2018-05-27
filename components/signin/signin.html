@@ -1,4 +1,5 @@
 <main role="main" class="container text-center">
+
     <form id="CheckAccount-Form" enctype="value" class="" style="width: 100%;max-width: 330px; padding: 15px;margin: auto;">
         <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal mt-3">Enter Account</h1>
@@ -6,26 +7,24 @@
         <input type="text" name="Account" class="form-control mt-3" placeholder="Mail or Phone" required autofocus>
         <button id="CheckAccount-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="CheckAccount()">CheckAccount</button>
     </form>
+
     <form id="SignIn-Form" enctype="value" class="" style="width: 100%;max-width: 330px; padding: 15px;margin: auto; display: none;">
         <img class="mb-4" src="https://getbootstrap.com/assets/brand/bootstrap-solid.svg" alt="" width="72" height="72">
         <h1 class="h3 mb-3 font-weight-normal mt-3">Enter Password</h1>
         <button id="Account" class="btn-primary btn btn-block mt-5 disabled" type="button"></button>
         <label class="sr-only disable">Password</label>
         <input type="password" name="Password" class="form-control mt-3" placeholder="Password" required autofocus>
+        <input id="Salt" type="hidden" name="Salt" value="">
+        <input id="SignInVerify" type="hidden" name="Verify" value="">
         <button id="SignIn-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnIn()">Sign In</button>
     </form>
+
 </main>
 <script type="text/javascript" src="/static/js/forge.min.js"></script>
 <script type="text/javascript">
-    /*
-        document.onreadystatechange =  () => {
-            if (document.readyState === "interactive") {
-                $("#SignIn-Form").hide();
-            }
-        }*/
     async function CheckAccount() {
         const formData = new FormData(document.getElementById("CheckAccount-Form"));
-        let Data = formData.ToArray()
+        const Data = formData.ToArray()
         const B = new AnimeButton("CheckAccount-Button");
         const Closer = B.OnLoding("disabled", "Checking...");
 
@@ -34,8 +33,10 @@
         if (json.State == "Success") {
             $("#CheckAccount-Form").hide();
             $("#SignIn-Form").show();
-            document.getElementById("Account").innerHTML = Data.Account;
             Closer();
+            document.getElementById("Account").innerHTML = Data.Account;
+            document.getElementById("Salt").value = json.Salt;
+            document.getElementById("SignInVerify").value = json.SignInVerify;
         } else {
             Closer();
             B.Alert("btn-warning btn btn-lg btn-block mt-5 disabled", json.Msg, 3000);
@@ -50,6 +51,10 @@
         }
         const B = new AnimeButton("SignIn-Button");
         const Closer = B.OnLoding("disabled", "Signing...");
+
+        var md = forge.md.sha256.create();
+        md.update('The quick brown fox jumps over the lazy dog');
+        console.log(md.digest().toHex());
 
         const json = await JsonRequest('POST', '/api/SignUp', Data)
 
