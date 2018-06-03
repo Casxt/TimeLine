@@ -1,6 +1,7 @@
 package session
 
 import (
+	"net/http"
 	"time"
 )
 
@@ -15,6 +16,7 @@ type SessionIO interface {
 type Manager interface {
 	Init(sessionID string)
 	ExpireTime(expireTime time.Duration) time.Duration
+	belong(*http.Request) bool
 	RLock()
 	RUnlock()
 	Lock()

@@ -1,6 +1,7 @@
 package session
 
 import (
+	"net/http"
 	"sync"
 	"time"
 )
@@ -9,6 +10,7 @@ import (
 type Session struct {
 	sessionID  string
 	expireTime time.Duration
+	address    string
 	setTime    time.Time
 	Map        map[string]interface{}
 	lock       sync.RWMutex
@@ -17,16 +19,19 @@ type Session struct {
 func (session Session) Init(sessionID string) {
 	session.lock.Lock()
 	defer session.lock.Unlock()
+
 	session.sessionID = sessionID
 	session.Map = make(map[string]interface{})
 
 }
 
+//ExpireTime set the ExpireTime of session and retuen ExpireTime of session,
+//ExpireTime smaller than 0 will not change ExpireTime of session so than can be use to get ExpireTime
 func (session Session) ExpireTime(expireTime time.Duration) time.Duration {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 
-	if expireTime == 0 {
+	if expireTime < 0 {
 		return session.expireTime
 	}
 
@@ -35,6 +40,13 @@ func (session Session) ExpireTime(expireTime time.Duration) time.Duration {
 	session.setTime = time.Now()
 	session.expireTime = expireTime
 	return session.expireTime
+}
+
+func (session Session) belong(req *http.Request) bool {
+	if req.RemoteAddr == session.address {
+		return true
+	}
+	return false
 }
 
 func (session Session) expired() bool {

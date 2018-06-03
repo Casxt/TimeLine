@@ -2,7 +2,6 @@ package session
 
 import (
 	"net/http"
-	"sync"
 	"time"
 )
 
@@ -12,7 +11,6 @@ var (
 
 func Open() {
 	sessionMap = make(map[string]SessionIO)
-	mapLock := new(sync.RWMutex)
 }
 
 func New(req *http.Request) SessionIO {
@@ -30,37 +28,54 @@ func New(req *http.Request) SessionIO {
 		panic("too many key duplicate")
 	}
 
-	session.Lock()
 	session.Init(sessionID)
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
 	session.Put("RemoteAddr", req.RemoteAddr)
-	session.Unlock()
 
 	sessionMap[sessionID] = session
 	return session
 }
 
 func Get(sessionID string, req *http.Request) SessionIO {
-	return check(sessionMap[sessionID], req)
+
+	if session, ok := sessionMap[sessionID]; ok {
+		return check(session, req)
+	}
+
+	return nil
 }
 
+//AutoGet will get session, if no vaild session
+//it will create a new session,and reurn second value as false
+func AutoGet(sessionID string, req *http.Request) (SessionIO, bool) {
+
+	if session, ok := sessionMap[sessionID]; ok {
+		if session := check(session, req); session != nil {
+			return session, true
+		}
+		return New(req), false
+	}
+
+	return New(req), false
+
+}
+
+//check wether session experid and wether belong to req
 func check(session SessionIO, req *http.Request) SessionIO {
-	if session.expired() {
-		return nil
+	if !session.expired() && session.belong(req) {
+		return session
 	}
-	if addr, _ := session.Get("RemoteAddr"); addr == req.RemoteAddr {
-		return nil
-	}
-	return session
+	return nil
 }
 
 func checkExpire(sessionMap map[string]SessionIO) {
 	for true {
 		for sessionID, session := range sessionMap {
 			if session.expired() {
+				//此处无需加锁，session被移除不会影响已经取出的session的工作。
 				delete(sessionMap, sessionID)
-				time.Sleep(time.Second)
 			}
+			time.Sleep(time.Second)
 		}
 	}
 }
