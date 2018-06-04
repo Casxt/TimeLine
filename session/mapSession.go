@@ -6,15 +6,15 @@ import (
 )
 
 var (
-	sessionMap map[string]SessionIO
+	sessionMap map[string]IO
 )
 
 func Open() {
-	sessionMap = make(map[string]SessionIO)
+	sessionMap = make(map[string]IO)
 }
 
-func New(req *http.Request) SessionIO {
-	var session SessionIO
+func New(req *http.Request) IO {
+	var session IO
 	var sessionID string
 	sessionID = newID()
 	count := 0
@@ -28,7 +28,7 @@ func New(req *http.Request) SessionIO {
 		panic("too many key duplicate")
 	}
 
-	session.Init(sessionID)
+	session.init(sessionID)
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
 	session.Put("RemoteAddr", req.RemoteAddr)
 
@@ -36,7 +36,7 @@ func New(req *http.Request) SessionIO {
 	return session
 }
 
-func Get(sessionID string, req *http.Request) SessionIO {
+func Get(sessionID string, req *http.Request) IO {
 
 	if session, ok := sessionMap[sessionID]; ok {
 		return check(session, req)
@@ -45,33 +45,37 @@ func Get(sessionID string, req *http.Request) SessionIO {
 	return nil
 }
 
-//AutoGet will get session, if no vaild session
+//Auto will get session,
+//if no vaild session
 //it will create a new session,and reurn second value as false
-func AutoGet(sessionID string, req *http.Request) (SessionIO, bool) {
+func Auto(sessionID string, req *http.Request) (IO, bool) {
 
 	if session, ok := sessionMap[sessionID]; ok {
 		if session := check(session, req); session != nil {
 			return session, true
 		}
-		return New(req), false
+		// session extra info not match, create a new one
+		session := New(req)
+		req.AddCookie(&http.Cookie{Name: "SessionId", Value: session.ID(), Path: "/", MaxAge: 86400})
+		return session, false
 	}
 
 	return New(req), false
 
 }
 
-//check wether session experid and wether belong to req
-func check(session SessionIO, req *http.Request) SessionIO {
-	if !session.expired() && session.belong(req) {
+//check wether session Expired and wether belong to req
+func check(session IO, req *http.Request) IO {
+	if !session.Expired() && session.Belong(req) {
 		return session
 	}
 	return nil
 }
 
-func checkExpire(sessionMap map[string]SessionIO) {
+func checkExpire(sessionMap map[string]IO) {
 	for true {
 		for sessionID, session := range sessionMap {
-			if session.expired() {
+			if session.Expired() {
 				//此处无需加锁，session被移除不会影响已经取出的session的工作。
 				delete(sessionMap, sessionID)
 			}

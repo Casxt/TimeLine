@@ -16,7 +16,7 @@ type Session struct {
 	lock       sync.RWMutex
 }
 
-func (session Session) Init(sessionID string) {
+func (session *Session) init(sessionID string) {
 	session.lock.Lock()
 	defer session.lock.Unlock()
 
@@ -27,7 +27,7 @@ func (session Session) Init(sessionID string) {
 
 //ExpireTime set the ExpireTime of session and retuen ExpireTime of session,
 //ExpireTime smaller than 0 will not change ExpireTime of session so than can be use to get ExpireTime
-func (session Session) ExpireTime(expireTime time.Duration) time.Duration {
+func (session *Session) ExpireTime(expireTime time.Duration) time.Duration {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 
@@ -42,14 +42,18 @@ func (session Session) ExpireTime(expireTime time.Duration) time.Duration {
 	return session.expireTime
 }
 
-func (session Session) belong(req *http.Request) bool {
+func (session *Session) Belong(req *http.Request) bool {
 	if req.RemoteAddr == session.address {
 		return true
 	}
 	return false
 }
 
-func (session Session) expired() bool {
+func (session *Session) ID() string {
+	return session.sessionID
+}
+
+func (session *Session) Expired() bool {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 
@@ -60,13 +64,13 @@ func (session Session) expired() bool {
 	return true
 }
 
-func (session Session) refresh() {
+func (session *Session) refresh() {
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	session.setTime = time.Now()
 }
 
-func (session Session) Get(key string) (res string, ok bool) {
+func (session *Session) Get(key string) (res string, ok bool) {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 	if session.Map == nil {
@@ -77,7 +81,7 @@ func (session Session) Get(key string) (res string, ok bool) {
 	return res, ok
 }
 
-func (session Session) GetInt(key string) (res int, ok bool) {
+func (session *Session) GetInt(key string) (res int, ok bool) {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 	if session.Map == nil {
@@ -88,7 +92,7 @@ func (session Session) GetInt(key string) (res int, ok bool) {
 	return res, ok
 }
 
-func (session Session) GetTime(key string) (res time.Time, ok bool) {
+func (session *Session) GetTime(key string) (res time.Time, ok bool) {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 	if session.Map == nil {
@@ -99,7 +103,7 @@ func (session Session) GetTime(key string) (res time.Time, ok bool) {
 	return res, ok
 }
 
-func (session Session) GetAll() map[string]interface{} {
+func (session *Session) GetAll() map[string]interface{} {
 	session.lock.RLock()
 	defer session.lock.RUnlock()
 	if session.Map == nil {
@@ -109,7 +113,7 @@ func (session Session) GetAll() map[string]interface{} {
 	return session.Map
 }
 
-func (session Session) Put(key string, value string) {
+func (session *Session) Put(key string, value string) {
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	if session.Map == nil {
@@ -119,7 +123,7 @@ func (session Session) Put(key string, value string) {
 	session.Map[key] = value
 }
 
-func (session Session) PutInt(key string, value int) {
+func (session *Session) PutInt(key string, value int) {
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	if session.Map == nil {
@@ -129,14 +133,14 @@ func (session Session) PutInt(key string, value int) {
 	session.Map[key] = value
 }
 
-func (session Session) PutAll(Map map[string]interface{}) {
+func (session *Session) PutAll(Map map[string]interface{}) {
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	session.refresh()
 	session.Map = Map
 }
 
-func (session Session) PutTime(key string, value time.Time) {
+func (session *Session) PutTime(key string, value time.Time) {
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	if session.Map == nil {
@@ -146,18 +150,18 @@ func (session Session) PutTime(key string, value time.Time) {
 	session.Map[key] = value
 }
 
-func (session Session) RLock() {
+func (session *Session) RLock() {
 	session.lock.RLock()
 }
 
-func (session Session) RUnlock() {
+func (session *Session) RUnlock() {
 	session.lock.RUnlock()
 }
 
-func (session Session) Lock() {
+func (session *Session) Lock() {
 	session.lock.Lock()
 }
 
-func (session Session) Unlock() {
+func (session *Session) Unlock() {
 	session.lock.Unlock()
 }

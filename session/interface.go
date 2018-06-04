@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-//SessionIO Interface
-type SessionIO interface {
+//IO Interface
+type IO interface {
 	Manager
 	Reader
 	Writer
@@ -14,14 +14,15 @@ type SessionIO interface {
 
 //Manager Interface
 type Manager interface {
-	Init(sessionID string)
+	init(sessionID string)
 	ExpireTime(expireTime time.Duration) time.Duration
-	belong(*http.Request) bool
+	Belong(*http.Request) bool
 	RLock()
 	RUnlock()
 	Lock()
 	Unlock()
-	expired() bool
+	Expired() bool
+	ID() string
 	refresh()
 }
 
