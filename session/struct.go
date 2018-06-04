@@ -14,7 +14,7 @@ type SessionObj struct {
 }
 
 func (obj *SessionObj) expired() bool {
-	if time.Since(obj.setTime) > obj.expireTime {
+	if time.Since(obj.setTime) > obj.expireTime && obj.expireTime != 0 {
 		return false
 	}
 	return true
@@ -137,6 +137,7 @@ func (session *Session) GetTime(key string) (res time.Time, ok bool) {
 }
 
 //Put string
+//set expireTime=0 to enable infinit lifetime
 func (session *Session) Put(key string, value string, expireTime time.Duration) {
 	session.refresh()
 	session.lock.Lock()
@@ -145,6 +146,7 @@ func (session *Session) Put(key string, value string, expireTime time.Duration) 
 }
 
 //PutInt int
+//set expireTime=0 to enable infinit lifetime
 func (session *Session) PutInt(key string, value int, expireTime time.Duration) {
 	session.refresh()
 	session.lock.Lock()
@@ -153,6 +155,7 @@ func (session *Session) PutInt(key string, value int, expireTime time.Duration) 
 }
 
 //PutTime time.Time
+//set expireTime=0 to enable infinit lifetime
 func (session *Session) PutTime(key string, value time.Time, expireTime time.Duration) {
 	session.refresh()
 	session.lock.Lock()
