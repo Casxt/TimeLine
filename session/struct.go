@@ -141,9 +141,6 @@ func (session *Session) Put(key string, value string, expireTime time.Duration) 
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
-	if session.Map == nil {
-		session.Map = make(map[string]*SessionObj)
-	}
 	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
@@ -152,9 +149,6 @@ func (session *Session) PutInt(key string, value int, expireTime time.Duration) 
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
-	if session.Map == nil {
-		session.Map = make(map[string]*SessionObj)
-	}
 	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
@@ -163,13 +157,11 @@ func (session *Session) PutTime(key string, value time.Time, expireTime time.Dur
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
-	if session.Map == nil {
-		session.Map = make(map[string]*SessionObj)
-	}
 	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
-//Delete key
+//Delete key,
+//delete will not cause panic
 func (session *Session) Delete(key string) {
 	session.Lock()
 	delete(session.Map, key)
