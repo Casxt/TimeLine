@@ -11,6 +11,7 @@ var (
 
 func Open() {
 	sessionMap = make(map[string]IO)
+	go checkExpire(sessionMap)
 }
 
 func New(req *http.Request) IO {
