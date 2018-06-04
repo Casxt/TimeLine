@@ -7,13 +7,13 @@ import (
 )
 
 //SessionObj struct should not be changed, readonly
-type SessionObj struct {
+type sessionObj struct {
 	value      interface{}
 	expireTime time.Duration
 	setTime    time.Time
 }
 
-func (obj *SessionObj) expired() bool {
+func (obj *sessionObj) expired() bool {
 	if time.Since(obj.setTime) > obj.expireTime && obj.expireTime != 0 {
 		return false
 	}
@@ -27,7 +27,7 @@ type Session struct {
 	address    string
 	userAgent  string
 	setTime    time.Time
-	Map        map[string]*SessionObj
+	Map        map[string]*sessionObj
 	lock       sync.RWMutex
 }
 
@@ -36,9 +36,11 @@ func (session *Session) init(sessionID string) {
 	defer session.Unlock()
 
 	session.sessionID = sessionID
-	session.Map = make(map[string]*SessionObj)
+	session.Map = make(map[string]*sessionObj)
 }
 
+//ExtraInfo set ExtraInfo for auth,
+//set "" will not change, can use to get ExtraInfo
 func (session *Session) ExtraInfo(address, userAgent string) (string, string) {
 	if address != "" {
 		session.Lock()
@@ -159,7 +161,7 @@ func (session *Session) Put(key string, value string, expireTime time.Duration) 
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
-	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
+	session.Map[key] = &sessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
 //PutInt int
@@ -168,7 +170,7 @@ func (session *Session) PutInt(key string, value int, expireTime time.Duration) 
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
-	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
+	session.Map[key] = &sessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
 //PutTime time.Time
@@ -177,7 +179,7 @@ func (session *Session) PutTime(key string, value time.Time, expireTime time.Dur
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
-	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
+	session.Map[key] = &sessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
 //Delete key,
