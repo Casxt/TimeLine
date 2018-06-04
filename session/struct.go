@@ -25,6 +25,7 @@ type Session struct {
 	sessionID  string
 	expireTime time.Duration
 	address    string
+	userAgent  string
 	setTime    time.Time
 	Map        map[string]*SessionObj
 	lock       sync.RWMutex
@@ -36,7 +37,22 @@ func (session *Session) init(sessionID string) {
 
 	session.sessionID = sessionID
 	session.Map = make(map[string]*SessionObj)
+}
 
+func (session *Session) ExtraInfo(address, userAgent string) (string, string) {
+	if address != "" {
+		session.Lock()
+		session.address = address
+		session.Unlock()
+	}
+	if userAgent != "" {
+		session.Lock()
+		session.userAgent = userAgent
+		session.Unlock()
+	}
+	session.RLock()
+	defer session.RUnlock()
+	return session.address, session.userAgent
 }
 
 //ExpireTime set the ExpireTime of session and retuen ExpireTime of session,
@@ -44,8 +60,8 @@ func (session *Session) init(sessionID string) {
 func (session *Session) ExpireTime(expireTime time.Duration) time.Duration {
 	session.refresh()
 
-	session.lock.RLock()
-	defer session.lock.RUnlock()
+	session.RLock()
+	defer session.RUnlock()
 
 	if expireTime < 0 {
 		return session.expireTime
@@ -56,7 +72,8 @@ func (session *Session) ExpireTime(expireTime time.Duration) time.Duration {
 
 //Belong check wether req match the requirement of session
 func (session *Session) Belong(req *http.Request) bool {
-	if req.RemoteAddr == session.address {
+	if req.RemoteAddr == session.address ||
+		req.UserAgent() == session.userAgent {
 		return true
 	}
 	return false

@@ -17,6 +17,7 @@ type Manager interface {
 	init(sessionID string)
 	ExpireTime(expireTime time.Duration) time.Duration
 	Belong(*http.Request) bool
+	ExtraInfo(address, userAgent string) (string, string)
 	RLock()
 	RUnlock()
 	Lock()
@@ -29,9 +30,9 @@ type Manager interface {
 
 //Writer Interface
 type Writer interface {
-	Put(key, value string)
-	PutInt(key string, value int)
-	PutTime(key string, value time.Time)
+	Put(key, value string, expireTime time.Duration)
+	PutInt(key string, value int, expireTime time.Duration)
+	PutTime(key string, value time.Time, expireTime time.Duration)
 }
 
 //Reader Interface

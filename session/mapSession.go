@@ -9,11 +9,13 @@ var (
 	sessionMap map[string]IO
 )
 
+//Open session server
 func Open() {
 	sessionMap = make(map[string]IO)
 	go checkExpire(sessionMap)
 }
 
+//New session
 func New(req *http.Request) IO {
 	var session IO
 	var sessionID string
@@ -31,12 +33,12 @@ func New(req *http.Request) IO {
 
 	session.init(sessionID)
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
-	session.Put("RemoteAddr", req.RemoteAddr)
-
+	session.ExtraInfo(req.RemoteAddr, req.UserAgent())
 	sessionMap[sessionID] = session
 	return session
 }
 
+//Get session
 func Get(sessionID string, req *http.Request) IO {
 
 	if session, ok := sessionMap[sessionID]; ok {
