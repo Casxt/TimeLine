@@ -6,22 +6,36 @@ import (
 	"time"
 )
 
+//SessionObj struct should not be changed, readonly
+type SessionObj struct {
+	value      interface{}
+	expireTime time.Duration
+	setTime    time.Time
+}
+
+func (obj *SessionObj) expired() bool {
+	if time.Since(obj.setTime) > obj.expireTime {
+		return false
+	}
+	return true
+}
+
 //Session struct
 type Session struct {
 	sessionID  string
 	expireTime time.Duration
 	address    string
 	setTime    time.Time
-	Map        map[string]interface{}
+	Map        map[string]*SessionObj
 	lock       sync.RWMutex
 }
 
 func (session *Session) init(sessionID string) {
-	session.lock.Lock()
-	defer session.lock.Unlock()
+	session.Lock()
+	defer session.Unlock()
 
 	session.sessionID = sessionID
-	session.Map = make(map[string]interface{})
+	session.Map = make(map[string]*SessionObj)
 
 }
 
@@ -55,8 +69,8 @@ func (session *Session) ID() string {
 
 //Expired return wether session is expired
 func (session *Session) Expired() bool {
-	session.lock.RLock()
-	defer session.lock.RUnlock()
+	session.RLock()
+	defer session.RUnlock()
 
 	if time.Since(session.setTime) > session.expireTime {
 		session.Map = nil
@@ -66,32 +80,42 @@ func (session *Session) Expired() bool {
 }
 
 func (session *Session) refresh() {
-	session.lock.Lock()
-	defer session.lock.Unlock()
+	session.Lock()
 	session.setTime = time.Now()
+	session.Unlock()
 }
 
 //Get  return type is string
 func (session *Session) Get(key string) (res string, ok bool) {
-	session.lock.RLock()
-	defer session.lock.RUnlock()
+	session.refresh()
+	session.RLock()
 	if session.Map == nil {
 		return "", false
 	}
-	session.refresh()
-	res, ok = session.Map[key].(string)
+	Obj := session.Map[key]
+	session.RUnlock()
+	if Obj.expired() {
+		session.Delete(key)
+		return "", false
+	}
+	res, ok = Obj.value.(string)
 	return res, ok
 }
 
 //GetInt return type is int
 func (session *Session) GetInt(key string) (res int, ok bool) {
 	session.refresh()
-	session.lock.RLock()
-	defer session.lock.RUnlock()
+	session.RLock()
 	if session.Map == nil {
 		return 0, false
 	}
-	res, ok = session.Map[key].(int)
+	Obj := session.Map[key]
+	session.RUnlock()
+	if Obj.expired() {
+		session.Delete(key)
+		return 0, false
+	}
+	res, ok = Obj.value.(int)
 	return res, ok
 }
 
@@ -99,45 +123,57 @@ func (session *Session) GetInt(key string) (res int, ok bool) {
 func (session *Session) GetTime(key string) (res time.Time, ok bool) {
 	session.refresh()
 	session.lock.RLock()
-	defer session.lock.RUnlock()
 	if session.Map == nil {
 		return time.Time{}, false
 	}
-	res, ok = session.Map[key].(time.Time)
+	Obj := session.Map[key]
+	session.lock.RUnlock()
+	if Obj.expired() {
+		session.Delete(key)
+		return time.Time{}, false
+	}
+	res, ok = Obj.value.(time.Time)
 	return res, ok
 }
 
 //Put string
-func (session *Session) Put(key string, value string) {
+func (session *Session) Put(key string, value string, expireTime time.Duration) {
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	if session.Map == nil {
-		session.Map = make(map[string]interface{})
+		session.Map = make(map[string]*SessionObj)
 	}
-	session.Map[key] = value
+	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
-//Put int
-func (session *Session) PutInt(key string, value int) {
+//PutInt int
+func (session *Session) PutInt(key string, value int, expireTime time.Duration) {
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	if session.Map == nil {
-		session.Map = make(map[string]interface{})
+		session.Map = make(map[string]*SessionObj)
 	}
-	session.Map[key] = value
+	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
 }
 
-//Put time.Time
-func (session *Session) PutTime(key string, value time.Time) {
+//PutTime time.Time
+func (session *Session) PutTime(key string, value time.Time, expireTime time.Duration) {
 	session.refresh()
 	session.lock.Lock()
 	defer session.lock.Unlock()
 	if session.Map == nil {
-		session.Map = make(map[string]interface{})
+		session.Map = make(map[string]*SessionObj)
 	}
-	session.Map[key] = value
+	session.Map[key] = &SessionObj{value: value, expireTime: expireTime, setTime: time.Now()}
+}
+
+//Delete key
+func (session *Session) Delete(key string) {
+	session.Lock()
+	delete(session.Map, key)
+	session.Unlock()
 }
 
 //RLock RLock

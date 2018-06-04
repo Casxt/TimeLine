@@ -24,6 +24,7 @@ type Manager interface {
 	Expired() bool
 	ID() string
 	refresh()
+	Delete()
 }
 
 //Writer Interface
