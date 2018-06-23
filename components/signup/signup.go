@@ -1,13 +1,13 @@
 package signup
 
 import (
-	"encoding/json"
 	"net/http"
 	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/mail"
 	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/tools"
 )
 
 //Route decide return which Page
@@ -30,7 +30,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 }
 
 //SignUp is a api interface, will signup a user
-func SignUp(req *http.Request) (status int, jsonRes map[string]string) {
+func SignUp(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 
 	type Data struct {
 		Phone    string `json:"Phone"`
@@ -38,13 +38,8 @@ func SignUp(req *http.Request) (status int, jsonRes map[string]string) {
 		HashPass string `json:"HashPass"`
 	}
 	var data Data
-	err := json.NewDecoder(req.Body).Decode(&data)
-	if err != nil {
-		status = 400
-		jsonRes = map[string]string{
-			"State": "Failde",
-			"Msg":   "Invilde Json bytes or parmeter not enough",
-		}
+
+	if status, jsonRes = tools.GetPostJSON(req, data); status != 200 {
 		return status, jsonRes
 	}
 

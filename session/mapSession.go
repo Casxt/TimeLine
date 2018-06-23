@@ -16,7 +16,7 @@ func Open() {
 }
 
 //New session
-func New(req *http.Request) IO {
+func New(res http.ResponseWriter, req *http.Request) IO {
 	var session IO
 	var sessionID string
 	sessionID = newID()
@@ -36,7 +36,7 @@ func New(req *http.Request) IO {
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
 	session.ExtraInfo(req.RemoteAddr, req.UserAgent())
 	sessionMap[sessionID] = session
-	req.AddCookie(&http.Cookie{Name: "SessionId", Value: session.ID(), Path: "/", MaxAge: 86400})
+	http.SetCookie(res, &http.Cookie{Name: "SessionId", Value: session.ID(), Path: "/", MaxAge: 86400, HttpOnly: true})
 	return session
 }
 
@@ -57,13 +57,13 @@ func Get(sessionID string, req *http.Request) IO {
 //if sessionID empty, will try to find sessionID in req
 //if no vaild session
 //it will create a new session,and reurn second value as true
-func Auto(sessionID string, req *http.Request) (session IO, NewSession bool) {
+func Auto(sessionID string, res http.ResponseWriter, req *http.Request) (session IO, NewSession bool) {
 
 	if sessionID == "" {
 		var cookie *http.Cookie
 		var err error
 		if cookie, err = req.Cookie("sessionID"); err != nil {
-			return New(req), true
+			return New(res, req), true
 		}
 		sessionID = cookie.Value
 	}
@@ -73,10 +73,10 @@ func Auto(sessionID string, req *http.Request) (session IO, NewSession bool) {
 			return session, false
 		}
 		// session extra info not match, create a new one
-		return New(req), true
+		return New(res, req), true
 	}
 
-	return New(req), true
+	return New(res, req), true
 
 }
 

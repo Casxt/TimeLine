@@ -2,7 +2,6 @@ package signin
 
 import (
 	"crypto/rand"
-	"encoding/json"
 	"math/big"
 	"net/http"
 	"regexp"
@@ -11,6 +10,7 @@ import (
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
 	"github.com/Casxt/TimeLine/session"
+	"github.com/Casxt/TimeLine/tools"
 )
 
 //Route Return The Page to Show
@@ -32,15 +32,20 @@ func Route(res http.ResponseWriter, req *http.Request) {
 
 //CheckAccount is a Api interface
 //the first step of sign in is check the account
-func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
+func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	var Salt string
 	var err error
+
 	type Data struct {
 		Account string `json:"Account"`
 	}
 	var data Data
-	err = json.NewDecoder(req.Body).Decode(&data)
-	if err != nil || data.Account == "" {
+
+	if status, jsonRes = tools.GetPostJSON(req, data); status != 200 {
+		return status, jsonRes
+	}
+
+	if data.Account == "" {
 		status = 400
 		jsonRes = map[string]string{
 			"State": "Failde",
@@ -85,7 +90,7 @@ func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
 
 	}
 
-	session, _ := session.Auto("", req)
+	session, _ := session.Auto("", res, req)
 	if session == nil {
 		jsonRes = map[string]string{
 			"State": "Failde",
