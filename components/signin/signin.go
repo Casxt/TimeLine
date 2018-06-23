@@ -85,8 +85,8 @@ func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
 
 	}
 
-	s := session.New(req)
-	if s == nil {
+	session, _ := session.Auto("", req)
+	if session == nil {
 		jsonRes = map[string]string{
 			"State": "Failde",
 			"Msg":   "Session Create Filed",
@@ -95,7 +95,7 @@ func CheckAccount(req *http.Request) (status int, jsonRes map[string]string) {
 	}
 
 	rnd, _ := rand.Int(rand.Reader, big.NewInt(1<<63-1))
-	s.Put("SignInVerify", rnd.String())
+	session.Put("SignInVerify", rnd.String(), 300)
 	jsonRes = map[string]string{
 		"State":        "Success",
 		"Msg":          "User Account Exist",

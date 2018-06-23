@@ -10,6 +10,7 @@ import (
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/session"
 )
 
 func route(res http.ResponseWriter, req *http.Request) {
@@ -37,6 +38,7 @@ func run() {
 	}
 	defer database.Close()
 
+	session.Open()
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(route))
 

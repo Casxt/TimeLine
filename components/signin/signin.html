@@ -51,10 +51,24 @@
         }
         const B = new AnimeButton("SignIn-Button");
         const Closer = B.OnLoding("disabled", "Signing...");
+        
+        //创建Hashpass
+        let md = forge.md.sha256.create();
+        md.update(Data.Password);
+        Data.HashPass = md.digest().toHex();
 
-        var md = forge.md.sha256.create();
-        md.update('The quick brown fox jumps over the lazy dog');
-        console.log(md.digest().toHex());
+        //创建
+        md = forge.md.sha256.create();
+        md.update(Data.Salt + Data.HashPass);
+        Data.HashSaltHashPass = md.digest().toHex();
+
+        Data.IV = forge.random.getBytesSync(12);
+        let cipher = forge.cipher.createCipher('AES-GCM', Data.HashSaltHashPass);
+        cipher.start({iv: Data.IV});
+        cipher.update(forge.util.createBuffer(Data.SignInVerify));
+        cipher.finish();
+        Data.Encrypted = cipher.output.getBytes();
+        Data.Tag = cipher.mode.tag.getBytes();
 
         const json = await JsonRequest('POST', '/api/SignUp', Data)
 

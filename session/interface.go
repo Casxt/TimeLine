@@ -25,7 +25,6 @@ type Manager interface {
 	Expired() bool
 	ID() string
 	refresh()
-	Delete()
 }
 
 //Writer Interface
@@ -33,6 +32,7 @@ type Writer interface {
 	Put(key, value string, expireTime time.Duration)
 	PutInt(key string, value int, expireTime time.Duration)
 	PutTime(key string, value time.Time, expireTime time.Duration)
+	Delete(key string)
 }
 
 //Reader Interface
