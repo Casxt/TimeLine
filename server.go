@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/Casxt/TimeLine/api"
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
@@ -17,7 +16,8 @@ func route(res http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
 	switch {
 	case strings.HasPrefix(strings.ToLower(path), "/api"):
-		api.Route(res, req)
+		http.SetCookie(res, &http.Cookie{Name: "api", Value: "asd", Path: "/", MaxAge: -1})
+		//api.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/signin"):
 		signin.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/signup"):
@@ -26,6 +26,7 @@ func route(res http.ResponseWriter, req *http.Request) {
 		page.Route(res, req)
 	default:
 		//不要为首页创建专门的判断，所有的首页都应该被默认展示
+		http.SetCookie(res, &http.Cookie{Name: "testcookie", Value: "asd", Path: "/", MaxAge: -1})
 		res.Write([]byte("TimeLine!"))
 	}
 }

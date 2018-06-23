@@ -39,7 +39,7 @@ func SignUp(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 	var data Data
 
-	if status, jsonRes = tools.GetPostJSON(req, data); status != 200 {
+	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
 		return status, jsonRes
 	}
 
