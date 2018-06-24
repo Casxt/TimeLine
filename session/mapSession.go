@@ -16,12 +16,13 @@ func Open() {
 }
 
 //New session
-func New(res http.ResponseWriter, req *http.Request) IO {
+func New(req *http.Request) IO {
 	var session IO
 	var sessionID string
 	sessionID = newID()
 	count := 0
 
+	// in case of key duplicate but will it really happend?
 	for sessionMap[sessionID] != nil && count < 3 {
 		sessionID = newID()
 		count++
@@ -36,11 +37,10 @@ func New(res http.ResponseWriter, req *http.Request) IO {
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
 	session.ExtraInfo(req.RemoteAddr, req.UserAgent())
 	sessionMap[sessionID] = session
-	http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 86400})
 	return session
 }
 
-//Get session
+//Get and check session
 func Get(sessionID string, req *http.Request) IO {
 
 	if session, ok := sessionMap[sessionID]; ok {
@@ -53,29 +53,36 @@ func Get(sessionID string, req *http.Request) IO {
 }
 
 //Auto will get session,
-//if sessionID empty, will try to find sessionID in req
+//if sessionID empty, will try to find sessionID in req cookie
 //if no vaild session
 //it will create a new session,and reurn second value as true
+//in addition this func will add cookie
 func Auto(sessionID string, res http.ResponseWriter, req *http.Request) (session IO, NewSession bool) {
 
 	if sessionID == "" {
 		var cookie *http.Cookie
 		var err error
 		if cookie, err = req.Cookie("SessionID"); err != nil {
-			return New(res, req), true
+			session = New(req)
+			http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+			return session, true
 		}
 		sessionID = cookie.Value
 	}
 
 	if session, ok := sessionMap[sessionID]; ok {
 		if check(session, req) {
+			http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
 			return session, false
 		}
 		// session extra info not match, create a new one
-		return New(res, req), true
+		session = New(req)
+		http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+		return session, true
 	}
-
-	return New(res, req), true
+	session = New(req)
+	http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+	return session, true
 
 }
 
