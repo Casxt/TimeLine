@@ -36,7 +36,7 @@ func New(res http.ResponseWriter, req *http.Request) IO {
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
 	session.ExtraInfo(req.RemoteAddr, req.UserAgent())
 	sessionMap[sessionID] = session
-	http.SetCookie(res, &http.Cookie{Name: "SessionId", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 86400})
+	http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 86400})
 	return session
 }
 
@@ -61,7 +61,7 @@ func Auto(sessionID string, res http.ResponseWriter, req *http.Request) (session
 	if sessionID == "" {
 		var cookie *http.Cookie
 		var err error
-		if cookie, err = req.Cookie("sessionID"); err != nil {
+		if cookie, err = req.Cookie("SessionID"); err != nil {
 			return New(res, req), true
 		}
 		sessionID = cookie.Value
@@ -84,21 +84,27 @@ func check(session IO, req *http.Request) bool {
 	if !session.Expired() && session.Belong(req) {
 		return true
 	}
+	//if delete here, may cause error
 	return false
 }
 
-//checkExpire will delete expeird session
-//need to consider
+//checkExpire will delete expeired session
+//need to optimal range sessionMap
 func checkExpire(sessionMap map[string]IO) {
+	var counter int8
 	for true {
 		for sessionID, session := range sessionMap {
+			counter++
 			if session.Expired() {
-				//unnecessary to lock there，session moved will not affect the working of session
 				delete(sessionMap, sessionID)
+				//考虑主动释放
 			}
-			time.Sleep(time.Second)
+			if counter > 9 {
+				time.Sleep(time.Second)
+				counter = 0
+			}
 		}
-		//if sessionMap is empty, this will cause forever loop
+		//if sessionMap is empty, without this will cause not paused forever loop
 		time.Sleep(time.Second)
 	}
 }
