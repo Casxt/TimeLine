@@ -36,8 +36,7 @@ func New(res http.ResponseWriter, req *http.Request) IO {
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
 	session.ExtraInfo(req.RemoteAddr, req.UserAgent())
 	sessionMap[sessionID] = session
-	http.SetCookie(res, &http.Cookie{Name: "SessionId", Value: session.ID(), Path: "/", MaxAge: -1})
-	//, HttpOnly: true, Path: "/", MaxAge: 86400
+	http.SetCookie(res, &http.Cookie{Name: "SessionId", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 86400})
 	return session
 }
 

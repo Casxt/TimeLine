@@ -20,6 +20,7 @@ FormData.prototype.ToArray = function (args) {
 
 async function JsonRequest(httpmethod, url, data){
     const request = new Request(url, {
+        credentials: 'include',//接受response中的cookie
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
