@@ -49,7 +49,6 @@ func Get(sessionID string, req *http.Request) IO {
 		}
 		return nil
 	}
-
 	return nil
 }
 
@@ -88,6 +87,8 @@ func check(session IO, req *http.Request) bool {
 	return false
 }
 
+//checkExpire will delete expeird session
+//need to consider
 func checkExpire(sessionMap map[string]IO) {
 	for true {
 		for sessionID, session := range sessionMap {
@@ -97,5 +98,7 @@ func checkExpire(sessionMap map[string]IO) {
 			}
 			time.Sleep(time.Second)
 		}
+		//if sessionMap is empty, this will cause forever loop
+		time.Sleep(time.Second)
 	}
 }
