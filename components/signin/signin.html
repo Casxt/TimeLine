@@ -62,6 +62,7 @@
         md.update(Data.Salt + HashPass);
         //never used HashSaltHashPass string in client
         //let HashSaltHashPass = md.digest().toHex();
+        //console.log(HashSaltHashPass);
 
         let IV = forge.random.getBytesSync(12);
         Data.IV = forge.util.bytesToHex(IV);
@@ -70,10 +71,10 @@
         cipher.start({iv: IV});
         cipher.update(forge.util.createBuffer(Data.SignInVerify));
         cipher.finish();
+        
         Data.Encrypted = cipher.output.toHex();
-        //Didn't found tag in golang, don't know how to use
-        //Data.Tag = forge.util.bytesToHex(cipher.mode.tag.getBytes());
-
+        //Encrypted + Tag is what we get in golang-aes-gcm
+        Data.Encrypted += forge.util.bytesToHex(cipher.mode.tag.getBytes());
         delete(Data.Password);
         delete(Data.Salt);
         delete(Data.SignInVerify);
@@ -83,6 +84,7 @@
 
         if (json.State == "Success") {
             B.Alert("SignUp-Button", "btn-success btn btn-lg btn-block mt-5 disabled", json.Msg, 1000);
+            window.location.href = "/";
         } else {
             B.Alert("SignUp-Button", "btn-warning btn btn-lg btn-block mt-5 disabled", json.Msg, 3000);
         }

@@ -135,6 +135,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 		}
 		return 400, jsonRes
 	}
+
 	var SaltPass, SignInVerify string
 	var ok bool
 	if SaltPass, ok = session.Get("SaltPass"); !ok {
@@ -143,14 +144,14 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 			"Msg":   "SaltPass of Session not found",
 		}
 	}
-
+	session.Delete(SaltPass)
 	if SignInVerify, ok = session.Get("SignInVerify"); !ok {
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SignInVerify of Session not found",
 		}
 	}
-
+	session.Delete(SignInVerify)
 	var key, ciphertext, nonce []byte
 	var err error
 
@@ -189,17 +190,30 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if err != nil {
 		return 400, map[string]string{
 			"State": "Failde",
-			"Msg":   "Auth failed",
+			"Msg":   "Decrypted failed",
 		}
 	}
-
 	if string(plaintext) != SignInVerify {
 		return 400, map[string]string{
 			"State": "Failde",
-			"Msg":   "Auth failed",
+			"Msg":   "Compare failed",
 		}
 	}
+	/*
+		aesgcm, err = cipher.NewGCM(block)
+		if err != nil {
+			panic(err.Error())
+		}
+		temp := []byte(SignInVerify)
+		serverCiphertext := aesgcm.Seal(nil, nonce, temp, nil)
 
+		if string(serverCiphertext) != string(ciphertext) {
+			return 400, map[string]string{
+				"State": "Failde",
+				"Msg":   "Compare failed",
+			}
+		}
+	*/
 	return 200, map[string]string{
 		"State": "Success",
 		"Msg":   "Sign In Success",
