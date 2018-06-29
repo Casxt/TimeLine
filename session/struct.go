@@ -93,9 +93,9 @@ func (session *Session) Expired() bool {
 
 	if time.Since(session.setTime) > session.expireTime {
 		session.Map = nil
-		return false
+		return true
 	}
-	return true
+	return false
 }
 
 func (session *Session) refresh() {

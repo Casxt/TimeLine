@@ -28,6 +28,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = signup.SignUp(res, req)
 	case strings.HasPrefix(subPath, "CheckAccount"):
 		resCode, jsonRes = signin.CheckAccount(res, req)
+	case strings.HasPrefix(subPath, "SignIn"):
+		resCode, jsonRes = signin.SignIn(res, req)
 	default:
 		resCode = 200
 		//http.SetCookie(res, &http.Cookie{Name: "testcookiename2", Value: "testcookievalue", Path: "/", MaxAge: 86400})

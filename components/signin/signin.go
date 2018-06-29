@@ -1,7 +1,10 @@
 package signin
 
 import (
+	"crypto/aes"
+	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"math/big"
 	"net/http"
 	"regexp"
@@ -33,7 +36,6 @@ func Route(res http.ResponseWriter, req *http.Request) {
 //CheckAccount is a Api interface
 //the first step of sign in is check the account
 func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
-	var Salt string
 	var err error
 
 	type Data struct {
@@ -56,12 +58,13 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 
 	mailRegexp := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	phoneRegexp := regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
-	var NickName string
+
+	var NickName, Salt, SaltPass string
 	switch {
 	case phoneRegexp.MatchString(data.Account):
-		_, NickName, _, Salt, _, _, _, err = database.GetUserByPhone(data.Account)
+		_, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByPhone(data.Account)
 	case mailRegexp.MatchString(data.Account):
-		_, NickName, _, Salt, _, _, _, err = database.GetUserByMail(data.Account)
+		_, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByMail(data.Account)
 	default:
 		//不匹配邮箱或电话
 		jsonRes = map[string]string{
@@ -90,7 +93,7 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 
 	}
 
-	session, _ := session.Auto("", res, req)
+	session, _ := session.Auto(res, req)
 	if session == nil {
 		jsonRes = map[string]string{
 			"State": "Failde",
@@ -101,6 +104,7 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 
 	rnd, _ := rand.Int(rand.Reader, big.NewInt(1<<63-1))
 	session.Put("SignInVerify", rnd.String(), 300)
+	session.Put("SaltPass", SaltPass, 300)
 	jsonRes = map[string]string{
 		"State":        "Success",
 		"Msg":          "User Account Exist",
@@ -109,4 +113,95 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 		"SignInVerify": rnd.String(),
 	}
 	return 200, jsonRes
+}
+
+//SignIn Will Auth User in a indirect way
+func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+	type Data struct {
+		Encrypted string `json:"Encrypted"`
+		IV        string `json:"IV"`
+	}
+	var data Data
+
+	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
+		return status, jsonRes
+	}
+	session := session.GetByCookie(req)
+	if session == nil {
+		jsonRes = map[string]string{
+			"State": "Failde",
+			"Msg": `Session not found, you should have SessionID first,
+			 call CheckAccount before you call this api`,
+		}
+		return 400, jsonRes
+	}
+	var SaltPass, SignInVerify string
+	var ok bool
+	if SaltPass, ok = session.Get("SaltPass"); !ok {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "SaltPass of Session not found",
+		}
+	}
+
+	if SignInVerify, ok = session.Get("SignInVerify"); !ok {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "SignInVerify of Session not found",
+		}
+	}
+
+	var key, ciphertext, nonce []byte
+	var err error
+
+	if key, err = hex.DecodeString(SaltPass); err != nil {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Invaild Parameter SaltPass",
+		}
+	}
+
+	if ciphertext, err = hex.DecodeString(data.Encrypted); err != nil {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Invaild Parameter Encrypted",
+		}
+	}
+
+	if nonce, err = hex.DecodeString(data.IV); err != nil {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Invaild Parameter IV",
+		}
+	}
+
+	block, err := aes.NewCipher(key)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	aesgcm, err := cipher.NewGCM(block)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, nil)
+	if err != nil {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Auth failed",
+		}
+	}
+
+	if string(plaintext) != SignInVerify {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Auth failed",
+		}
+	}
+
+	return 200, map[string]string{
+		"State": "Success",
+		"Msg":   "Sign In Success",
+	}
 }

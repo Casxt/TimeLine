@@ -13,9 +13,9 @@
         <h1 class="h3 mb-3 font-weight-normal mt-3">Enter Password</h1>
         <button id="Account" class="btn-primary btn btn-block mt-5 disabled" type="button"></button>
         <label class="sr-only disable">Password</label>
-        <input type="password" name="Password" class="form-control mt-3" placeholder="Password" required autofocus>
+        <input type="Password" name="Password" class="form-control mt-3" placeholder="Password" required autofocus>
         <input id="Salt" type="hidden" name="Salt" value="">
-        <input id="SignInVerify" type="hidden" name="Verify" value="">
+        <input id="SignInVerify" type="hidden" name="SignInVerify" value="">
         <button id="SignIn-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="SingnIn()">Sign In</button>
     </form>
 
@@ -55,22 +55,29 @@
         //创建Hashpass
         let md = forge.md.sha256.create();
         md.update(Data.Password);
-        Data.HashPass = md.digest().toHex();
+        let HashPass = md.digest().toHex();
 
         //创建
         md = forge.md.sha256.create();
-        md.update(Data.Salt + Data.HashPass);
-        Data.HashSaltHashPass = md.digest().toHex();
+        md.update(Data.Salt + HashPass);
+        //never used HashSaltHashPass string in client
+        //let HashSaltHashPass = md.digest().toHex();
 
-        Data.IV = forge.random.getBytesSync(12);
-        let cipher = forge.cipher.createCipher('AES-GCM', Data.HashSaltHashPass);
-        cipher.start({iv: Data.IV});
+        let IV = forge.random.getBytesSync(12);
+        Data.IV = forge.util.bytesToHex(IV);
+        let cipher = forge.cipher.createCipher('AES-GCM', md.digest().data);
+        
+        cipher.start({iv: IV});
         cipher.update(forge.util.createBuffer(Data.SignInVerify));
         cipher.finish();
-        Data.Encrypted = cipher.output.getBytes();
-        Data.Tag = cipher.mode.tag.getBytes();
+        Data.Encrypted = cipher.output.toHex();
+        //Didn't found tag in golang, don't know how to use
+        //Data.Tag = forge.util.bytesToHex(cipher.mode.tag.getBytes());
 
-        const json = await JsonRequest('POST', '/api/SignUp', Data)
+        delete(Data.Password);
+        delete(Data.Salt);
+        delete(Data.SignInVerify);
+        const json = await JsonRequest('POST', '/api/SignIn', Data);
 
         Closer();
 

@@ -1,6 +1,7 @@
 package session
 
 import (
+	"log"
 	"net/http"
 	"time"
 )
@@ -40,16 +41,30 @@ func New(req *http.Request) IO {
 	return session
 }
 
+//GetByCookie get session by cookie
+func GetByCookie(req *http.Request) IO {
+	var cookie *http.Cookie
+	var err error
+	if cookie, err = req.Cookie("SessionID"); err != nil {
+		return nil
+	}
+	return Get(cookie.Value, req)
+}
+
 //Get and check session
 func Get(sessionID string, req *http.Request) IO {
-
+	for k, v := range sessionMap {
+		log.Println(k, v)
+	}
 	if session, ok := sessionMap[sessionID]; ok {
 		if check(session, req) {
 			return session
 		}
 		return nil
+	} else {
+		return nil
 	}
-	return nil
+
 }
 
 //Auto will get session,
@@ -57,18 +72,16 @@ func Get(sessionID string, req *http.Request) IO {
 //if no vaild session
 //it will create a new session,and reurn second value as true
 //in addition this func will add cookie
-func Auto(sessionID string, res http.ResponseWriter, req *http.Request) (session IO, NewSession bool) {
+func Auto(res http.ResponseWriter, req *http.Request) (session IO, NewSession bool) {
 
-	if sessionID == "" {
-		var cookie *http.Cookie
-		var err error
-		if cookie, err = req.Cookie("SessionID"); err != nil {
-			session = New(req)
-			http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
-			return session, true
-		}
-		sessionID = cookie.Value
+	var cookie *http.Cookie
+	var err error
+	if cookie, err = req.Cookie("SessionID"); err != nil {
+		session = New(req)
+		http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+		return session, true
 	}
+	sessionID := cookie.Value
 
 	if session, ok := sessionMap[sessionID]; ok {
 		if check(session, req) {
@@ -103,6 +116,7 @@ func checkExpire(sessionMap map[string]IO) {
 		for sessionID, session := range sessionMap {
 			counter++
 			if session.Expired() {
+				log.Panicln("Delete expeired Session:", sessionID)
 				delete(sessionMap, sessionID)
 				//考虑主动释放
 			}
