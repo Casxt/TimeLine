@@ -1,7 +1,6 @@
 package session
 
 import (
-	"log"
 	"net/http"
 	"time"
 )
@@ -53,18 +52,13 @@ func GetByCookie(req *http.Request) IO {
 
 //Get and check session
 func Get(sessionID string, req *http.Request) IO {
-	for k, v := range sessionMap {
-		log.Println(k, v)
-	}
 	if session, ok := sessionMap[sessionID]; ok {
 		if check(session, req) {
 			return session
 		}
 		return nil
-	} else {
-		return nil
 	}
-
+	return nil
 }
 
 //Auto will get session,
@@ -116,7 +110,7 @@ func checkExpire(sessionMap map[string]IO) {
 		for sessionID, session := range sessionMap {
 			counter++
 			if session.Expired() {
-				log.Panicln("Delete expeired Session:", sessionID)
+				//log.Panicln("Delete expeired Session:", sessionID)
 				delete(sessionMap, sessionID)
 				//考虑主动释放
 			}
