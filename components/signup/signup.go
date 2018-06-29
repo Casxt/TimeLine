@@ -2,7 +2,6 @@ package signup
 
 import (
 	"net/http"
-	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/mail"
@@ -15,12 +14,12 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
 
-	subPath := req.URL.Path[7:]
+	//subPath := req.URL.Path[len("/signup"):]
 
 	switch {
-	case strings.HasSuffix(strings.ToLower(subPath), "signup.js"):
-		result, status, _ = page.GetFile("components", "signup", "signup.js")
-		res.Header().Add("Content-Type", "application/x-javascript")
+	//case strings.HasSuffix(strings.ToLower(subPath), "signup.js"):
+	//	result, status, _ = page.GetFile("components", "signup", "signup.js")
+	//	res.Header().Add("Content-Type", "application/x-javascript")
 	default:
 		result, status, _ = page.GetPage("components", "signup", "signup.html")
 

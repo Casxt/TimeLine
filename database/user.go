@@ -12,53 +12,53 @@ import (
 )
 
 //GetUserByMail Found User By Mail
-func GetUserByMail(Mail string) (Phone, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
+func GetUserByMail(Mail string) (ID, Phone, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
 	course, selfCourse, DBErr := Begin(nil)
 	if DBErr != nil {
 		log.Println(DBErr.Error())
-		return "", "", "", "", "", "", time.Time{}, errors.New("DataBase Connection Error")
+		return "", "", "", "", "", "", "", time.Time{}, errors.New("DataBase Connection Error")
 	}
 	defer GraceCommit(course, selfCourse, DBErr)
 
-	sqlCmd := "SELECT `Phone`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Mail`=?"
+	sqlCmd := "SELECT `ID`,`Phone`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Mail`=?"
 	Row := course.QueryRow(sqlCmd, Mail)
 
-	if DBErr = Row.Scan(&Phone, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
+	if DBErr = Row.Scan(&ID, &Phone, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
 		switch DBErr.Error() {
 		case "sql: no rows in result set":
-			return "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
+			return "", "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
 		default:
 			log.Println(DBErr.Error())
-			return "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
+			return "", "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
 		}
 	}
 
-	return Mail, NickName, Gender, Salt, SaltPass, ProfilePic, SignInTime, nil
+	return ID, Mail, NickName, Gender, Salt, SaltPass, ProfilePic, SignInTime, nil
 }
 
 //GetUserByPhone Found User By Phone
-func GetUserByPhone(Phone string) (Mail, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
+func GetUserByPhone(Phone string) (ID, Mail, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
 	course, selfCourse, DBErr := Begin(nil)
 	if DBErr != nil {
 		log.Println(DBErr.Error())
-		return "", "", "", "", "", "", time.Time{}, errors.New("DataBase Connection Error")
+		return "", "", "", "", "", "", "", time.Time{}, errors.New("DataBase Connection Error")
 	}
 	defer GraceCommit(course, selfCourse, DBErr)
 
-	sqlCmd := "SELECT `Mail`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Phone`=?"
+	sqlCmd := "SELECT `ID`,`Mail`,`NickName`,`Gender`,`Salt`,`SaltPass`,`ProfilePic`,`Time` FROM `User` WHERE `Phone`=?"
 	Row := course.QueryRow(sqlCmd, Phone)
 
-	if DBErr = Row.Scan(&Mail, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
+	if DBErr = Row.Scan(&ID, &Mail, &NickName, &Gender, &Salt, &SaltPass, &ProfilePic, &SignInTime); DBErr != nil {
 		switch DBErr.Error() {
 		case "sql: no rows in result set":
-			return "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
+			return "", "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
 		default:
 			log.Println(DBErr.Error())
-			return "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
+			return "", "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
 		}
 	}
 
-	return Mail, NickName, Gender, Salt, SaltPass, ProfilePic, SignInTime, nil
+	return ID, Mail, NickName, Gender, Salt, SaltPass, ProfilePic, SignInTime, nil
 }
 
 //CreateUser create a unverify user

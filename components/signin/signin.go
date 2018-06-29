@@ -8,7 +8,6 @@ import (
 	"math/big"
 	"net/http"
 	"regexp"
-	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
@@ -21,10 +20,10 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
 
-	subPath := req.URL.Path[7:]
+	//subPath := req.URL.Path[len("/signin"):]
 	switch {
-	case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
-		result, status, _ = page.GetFile("components", "signin", "signup.js")
+	//case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
+	//	result, status, _ = page.GetFile("components", "signin", "signup.js")
 	default:
 		result, status, _ = page.GetPage("components", "signin", "signin.html")
 
@@ -59,12 +58,12 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 	mailRegexp := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	phoneRegexp := regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
 
-	var NickName, Salt, SaltPass string
+	var ID, NickName, Salt, SaltPass string
 	switch {
 	case phoneRegexp.MatchString(data.Account):
-		_, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByPhone(data.Account)
+		ID, _, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByPhone(data.Account)
 	case mailRegexp.MatchString(data.Account):
-		_, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByMail(data.Account)
+		ID, _, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByMail(data.Account)
 	default:
 		//不匹配邮箱或电话
 		jsonRes = map[string]string{
@@ -105,6 +104,9 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 	rnd, _ := rand.Int(rand.Reader, big.NewInt(1<<63-1))
 	session.Put("SignInVerify", rnd.String(), 300)
 	session.Put("SaltPass", SaltPass, 300)
+	//Save some info of account, if login failed, it will be delete
+	session.Put("ID", ID, 300)
+	session.Put("NickName", NickName, 300)
 	jsonRes = map[string]string{
 		"State":        "Success",
 		"Msg":          "User Account Exist",
@@ -139,6 +141,8 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	var SaltPass, SignInVerify string
 	var ok bool
 	if SaltPass, ok = session.Get("SaltPass"); !ok {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SaltPass of Session not found",
@@ -146,6 +150,8 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 	session.Delete(SaltPass)
 	if SignInVerify, ok = session.Get("SignInVerify"); !ok {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SignInVerify of Session not found",
@@ -156,6 +162,8 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	var err error
 
 	if key, err = hex.DecodeString(SaltPass); err != nil {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter SaltPass",
@@ -163,6 +171,8 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 
 	if ciphertext, err = hex.DecodeString(data.Encrypted); err != nil {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter Encrypted",
@@ -170,6 +180,8 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 
 	if nonce, err = hex.DecodeString(data.IV); err != nil {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter IV",
@@ -188,32 +200,41 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 
 	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Decrypted failed",
 		}
 	}
 	if string(plaintext) != SignInVerify {
+		session.Delete("ID")
+		session.Delete("NickName")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Compare failed",
 		}
 	}
-	/*
-		aesgcm, err = cipher.NewGCM(block)
-		if err != nil {
-			panic(err.Error())
+	ID, ok := session.Get("ID")
+	if !ok {
+		session.Delete("ID")
+		session.Delete("NickName")
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Timeout",
 		}
-		temp := []byte(SignInVerify)
-		serverCiphertext := aesgcm.Seal(nil, nonce, temp, nil)
-
-		if string(serverCiphertext) != string(ciphertext) {
-			return 400, map[string]string{
-				"State": "Failde",
-				"Msg":   "Compare failed",
-			}
+	}
+	NickName, ok := session.Get("NickName")
+	if !ok {
+		session.Delete("ID")
+		session.Delete("NickName")
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Timeout",
 		}
-	*/
+	}
+	session.Put("ID", ID, 60*60*24*30)
+	session.Put("NickName", NickName, 60*60*24*30)
 	return 200, map[string]string{
 		"State": "Success",
 		"Msg":   "Sign In Success",

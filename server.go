@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Casxt/TimeLine/api"
+	"github.com/Casxt/TimeLine/components/index"
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
@@ -25,9 +26,7 @@ func route(res http.ResponseWriter, req *http.Request) {
 	case strings.HasPrefix(strings.ToLower(path), "/static"):
 		page.Route(res, req)
 	default:
-		//不要为首页创建专门的判断，所有的首页都应该被默认展示
-		http.SetCookie(res, &http.Cookie{Name: "testcookie", Value: "asd", Path: "/", MaxAge: -1})
-		res.Write([]byte("TimeLine!"))
+		index.Route(res, req)
 	}
 }
 
