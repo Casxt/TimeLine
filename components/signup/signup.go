@@ -43,13 +43,10 @@ func SignUp(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 
 	if data.Phone == "" || data.Mail == "" {
-		//参数错误
-		status = 400
-		jsonRes = map[string]string{
+		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invilde Parameter",
 		}
-		return status, jsonRes
 	}
 
 	_, Pass, err := database.CreateUser(data.Phone, data.Mail, data.HashPass)

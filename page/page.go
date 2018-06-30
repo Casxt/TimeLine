@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"io/ioutil"
 	"log"
+	"os"
 	"path"
 	"path/filepath"
 )
@@ -66,4 +67,19 @@ func GetFile(names ...string) (File []byte, status int, err error) {
 	//log.Println(path.Ext(names[len(names)-1]))
 	//res.Header().Add("Content-Type", mime.TypeByExtension(path.Ext(names[len(names)-1])))
 	return content, 200, err
+}
+
+//SaveFile save static file
+func SaveFile(bytes []byte, names ...string) (err error) {
+	var absPath string
+	absPath = filepath.FromSlash(path.Join(ProjectPath, path.Join(names...)))
+	err = ioutil.WriteFile(absPath, bytes, os.ModeAppend)
+	if err != nil {
+		log.Println(err.Error())
+		return err
+	}
+	//log.Println(mime.TypeByExtension(path.Ext(names[len(names)-1])))
+	//log.Println(path.Ext(names[len(names)-1]))
+	//res.Header().Add("Content-Type", mime.TypeByExtension(path.Ext(names[len(names)-1])))
+	return nil
 }

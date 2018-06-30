@@ -32,7 +32,6 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = signin.SignIn(res, req)
 	default:
 		resCode = 200
-		//http.SetCookie(res, &http.Cookie{Name: "testcookiename2", Value: "testcookievalue", Path: "/", MaxAge: 86400})
 		jsonRes = map[string]string{
 			"State": "Succesful",
 			"Msg":   "test Successful",

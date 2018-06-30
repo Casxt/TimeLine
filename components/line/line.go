@@ -6,6 +6,7 @@ import (
 	"github.com/Casxt/TimeLine/page"
 )
 
+//Route decide page
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
@@ -19,4 +20,31 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	}
 	res.WriteHeader(status)
 	res.Write(result)
+}
+
+//CreateLine will create a new line with specific name
+func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+	type Data struct {
+		Operator string `json:"Operator"`
+		Name     string `json:"Name"`
+	}
+
+	return 400, map[string]string{
+		"State": "Failde",
+		"Msg":   "Invilde Parameter",
+	}
+}
+
+//AddUser will will add user to specific line
+func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+	type Data struct {
+		Operator  string `json:"Operator"`
+		Name      string `json:"Name"`
+		UserPhone string `json:"UserPhone"`
+	}
+
+	return 400, map[string]string{
+		"State": "Failde",
+		"Msg":   "Invilde Parameter",
+	}
 }
