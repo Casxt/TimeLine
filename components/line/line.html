@@ -27,9 +27,9 @@
 <script type="text/javascript">
     const now = new Date();
     document.getElementById('TimePoint').value = now.toISOString().slice(0, 16); //"2018-03-11T16:20:10";
-
     function preview(file) {
-        if (file.files.length > 9){
+        if (file.files.length > 9) {
+            //TODO: 完善提醒
             alert("Too much img!");
             return;
         }
@@ -39,7 +39,7 @@
         let reader = new FileReader();
         reader.onload = function (evt) {
             prevDiv.innerHTML += '<img src="' + evt.target.result +
-                '" class="rounded float-left w-25 md-2 mt-2 ml-3 img-thumbnail"/>';//style="width: 30%;"
+                '" class="rounded float-left w-25 md-2 mt-2 ml-3 img-thumbnail"/>'; //style="width: 30%;"
         }
         reader.onloadend = function () {
             if (++count < file.files.length) {
