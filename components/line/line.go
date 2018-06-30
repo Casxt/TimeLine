@@ -1,4 +1,4 @@
-package index
+package line
 
 import (
 	"net/http"
@@ -15,7 +15,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	//case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
 	//	result, status, _ = page.GetFile("components", "signin", "signup.js")
 	default:
-		result, status, _ = page.GetPage("components", "index", "index.html")
+		result, status, _ = page.GetPage("components", "line", "line.html")
 	}
 	res.WriteHeader(status)
 	res.Write(result)

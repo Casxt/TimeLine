@@ -1,0 +1,51 @@
+<main role="main" class="container text-center mt-5 mb-5">
+    <div class="card mt-3">
+        <form class="card-body cols container">
+            <textarea class="form-control" id="" rows="3"></textarea>
+            <div class="row mt-2 w-auto float-md-right mr-1 ml-1">
+                <div class="custom-file w-auto mr-1 mt-2">
+                    <div class="btn btn-primary">
+                        <input type="file" multiple="multiple" style="width: 6rem; opacity: 0; position: absolute; z-index: -1" id="customFile" onchange="preview(this)">
+                        <label style="width:6rem;position:relative;margin: 1px" for="customFile">Choose Img</label>
+                    </div>
+                </div>
+                <input class="form-control mr-1 ml-1 mt-2" style="width: 11rem;text-align: center;font-size: 0.85rem;padding: 0.4rem" id="TimePoint"
+                    type="datetime-local" value="">
+                <button type="submit" class="btn btn-primary ml-1 mt-2">Submit</button>
+            </div>
+        </form>
+        <div class="container mb-3" id="preview">
+
+        </div>
+    </div>
+    <div class="card mt-3">
+        <div class="card-body">
+            This is some text within a card body.
+        </div>
+    </div>
+</main>
+<script type="text/javascript">
+    const now = new Date();
+    document.getElementById('TimePoint').value = now.toISOString().slice(0, 16); //"2018-03-11T16:20:10";
+
+    function preview(file) {
+        if (file.files.length > 9){
+            alert("Too much img!");
+            return;
+        }
+        const prevDiv = document.getElementById('preview');
+        prevDiv.innerHTML = "";
+        let count = 0;
+        let reader = new FileReader();
+        reader.onload = function (evt) {
+            prevDiv.innerHTML += '<img src="' + evt.target.result +
+                '" class="rounded float-left w-25 md-2 mt-2 ml-3 img-thumbnail"/>';//style="width: 30%;"
+        }
+        reader.onloadend = function () {
+            if (++count < file.files.length) {
+                reader.readAsDataURL(file.files[count]);
+            }
+        }
+        reader.readAsDataURL(file.files[count]);
+    }
+</script>

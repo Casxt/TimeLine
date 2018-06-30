@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/Casxt/TimeLine/api"
-	"github.com/Casxt/TimeLine/components/index"
+	"github.com/Casxt/TimeLine/components/line"
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
@@ -26,7 +26,7 @@ func route(res http.ResponseWriter, req *http.Request) {
 	case strings.HasPrefix(strings.ToLower(path), "/static"):
 		page.Route(res, req)
 	default:
-		index.Route(res, req)
+		line.Route(res, req)
 	}
 }
 
