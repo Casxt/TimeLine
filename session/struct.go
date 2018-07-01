@@ -105,20 +105,26 @@ func (session *Session) refresh() {
 }
 
 //Get  return type is string
-func (session *Session) Get(key string) (res string, ok bool) {
+//if not have key or value type is not string return ""
+func (session *Session) Get(key string) (res string) {
 	session.refresh()
 	session.RLock()
 	if session.Map == nil {
-		return "", false
+		return ""
 	}
-	Obj := session.Map[key]
+	Obj, ok := session.Map[key]
+	if !ok {
+		return ""
+	}
 	session.RUnlock()
 	if Obj.expired() {
 		session.Delete(key)
-		return "", false
+		return ""
 	}
-	res, ok = Obj.value.(string)
-	return res, ok
+	if res, ok := Obj.value.(string); ok {
+		return res
+	}
+	return ""
 }
 
 //GetInt return type is int
@@ -128,7 +134,10 @@ func (session *Session) GetInt(key string) (res int, ok bool) {
 	if session.Map == nil {
 		return 0, false
 	}
-	Obj := session.Map[key]
+	Obj, ok := session.Map[key]
+	if !ok {
+		return 0, false
+	}
 	session.RUnlock()
 	if Obj.expired() {
 		session.Delete(key)
@@ -145,7 +154,10 @@ func (session *Session) GetTime(key string) (res time.Time, ok bool) {
 	if session.Map == nil {
 		return time.Time{}, false
 	}
-	Obj := session.Map[key]
+	Obj, ok := session.Map[key]
+	if !ok {
+		return time.Time{}, false
+	}
 	session.lock.RUnlock()
 	if Obj.expired() {
 		session.Delete(key)
@@ -153,6 +165,15 @@ func (session *Session) GetTime(key string) (res time.Time, ok bool) {
 	}
 	res, ok = Obj.value.(time.Time)
 	return res, ok
+}
+
+//Have if session have key return true
+func (session *Session) Have(key string) bool {
+	session.refresh()
+	session.lock.RLock()
+	_, ok := session.Map[key]
+	session.lock.RUnlock()
+	return ok
 }
 
 //Put string

@@ -21,10 +21,12 @@ func CreateImage(UserID string, ImageHashs []string) error {
 		log.Println("CreateImage:", DBErr.Error())
 		return err
 	}
+
 	for hash := range ImageHashs {
 		_, DBErr = stmt.Exec(hash, UserID)
 		if DBErr != nil {
 			switch {
+
 			case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):
 				DBErr = nil
 				continue

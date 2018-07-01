@@ -12,6 +12,8 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Casxt/TimeLine/session"
+
 	"github.com/Casxt/TimeLine/page"
 )
 
@@ -39,9 +41,12 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		Hashs []string
 	}
 
+	Session, _ := session.Auto(res, req)
+	UserID, ok := Session.Get("UserID")
+
 	PostReader, err := req.MultipartReader()
 	if err != nil {
-		log.Println(err.Error())
+		//log.Println("UploadImage-MultipartReader:", err.Error())
 		byteRes, _ = json.Marshal(ImgUploadRes{
 			State: "Failde",
 			Msg:   err.Error(),
@@ -75,9 +80,8 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			})
 			return 400, byteRes
 		}
-		//inorder to call parseContentDisposition()
-		name := part.FormName()
-		if name != "images" {
+
+		if part.FormName() != "images" {
 			continue
 		}
 
@@ -114,8 +118,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		case "image/jpeg":
 			img, err = jpeg.Decode(bytes.NewReader(rawBytes))
 			if err != nil {
-				s := err.Error()
-				log.Println(s)
+				log.Println(err.Error())
 				byteRes, _ = json.Marshal(ImgUploadRes{
 					State: "Failde",
 					Msg:   "invalid jpeg file",
@@ -125,8 +128,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		case "image/png":
 			img, err = png.Decode(bytes.NewReader(rawBytes))
 			if err != nil {
-				s := err.Error()
-				log.Println(s)
+				log.Println(err.Error())
 				byteRes, _ = json.Marshal(ImgUploadRes{
 					State: "Failde",
 					Msg:   "invalid jpeg file",
