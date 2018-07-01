@@ -37,7 +37,7 @@ type Writer interface {
 
 //Reader Interface
 type Reader interface {
-	Get(key string) string
+	Get(key string) (string, bool)
 	GetInt(key string) (int, bool)
 	GetTime(key string) (time.Time, bool)
 	Have(key string) bool

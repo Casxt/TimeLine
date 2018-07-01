@@ -106,25 +106,25 @@ func (session *Session) refresh() {
 
 //Get  return type is string
 //if not have key or value type is not string return ""
-func (session *Session) Get(key string) (res string) {
+func (session *Session) Get(key string) (res string, ok bool) {
 	session.refresh()
 	session.RLock()
 	if session.Map == nil {
-		return ""
+		return "", false
 	}
 	Obj, ok := session.Map[key]
 	if !ok {
-		return ""
+		return "", false
 	}
 	session.RUnlock()
 	if Obj.expired() {
 		session.Delete(key)
-		return ""
+		return "", false
 	}
 	if res, ok := Obj.value.(string); ok {
-		return res
+		return res, true
 	}
-	return ""
+	return "", false
 }
 
 //GetInt return type is int
