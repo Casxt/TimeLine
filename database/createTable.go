@@ -90,7 +90,7 @@ func CreateImageTable(course *sql.Tx) (err error) {
 	defer GraceCommit(course, selfCourse, err)
 	sqlCmd := `CREATE TABLE 'Image' (
 		'ID'  int NOT NULL AUTO_INCREMENT ,
-		'Hash' int NOT NULL,
+		'Hash' char(64) CHARACTER SET utf8 NOT NULL,
 		'UserID'  int NOT NULL,
 		'Time'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY ('UserID') REFERENCES 'User' ('ID'),

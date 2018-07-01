@@ -22,7 +22,7 @@ func CreateImage(UserID string, ImageHashs []string) error {
 		return err
 	}
 
-	for hash := range ImageHashs {
+	for _, hash := range ImageHashs {
 		_, DBErr = stmt.Exec(hash, UserID)
 		if DBErr != nil {
 			switch {

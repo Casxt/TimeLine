@@ -12,6 +12,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/session"
 
 	"github.com/Casxt/TimeLine/page"
@@ -25,6 +26,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	switch {
 	case req.Method == "POST":
 		status, result = UploadImage(res, req)
+
 	default:
 		result, status, _ = page.GetPage("components", "image", "line.html")
 	}
@@ -34,6 +36,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 
 //UploadImage will procss img uploaded, resize and caculate hash and storge
 // max size is 20MB
+// TODO: Limit img num of user
 func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRes []byte) {
 	type ImgUploadRes struct {
 		State string
@@ -42,7 +45,18 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 	}
 
 	Session, _ := session.Auto(res, req)
-	UserID, ok := Session.Get("UserID")
+	UserID, ok := Session.Get("ID")
+	//Check User Login At first
+	//For Some Reason, client Cannot receive this msg
+	//I don't know why
+	//TODO: fix this bug
+	if !ok {
+		byteRes, _ = json.Marshal(ImgUploadRes{
+			State: "Failde",
+			Msg:   "User Not SignIn",
+		})
+		return 400, []byte("byteRes")
+	}
 
 	PostReader, err := req.MultipartReader()
 	if err != nil {
@@ -50,7 +64,6 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		byteRes, _ = json.Marshal(ImgUploadRes{
 			State: "Failde",
 			Msg:   err.Error(),
-			Hashs: make([]string, 0),
 		})
 		return 400, byteRes
 	}
@@ -80,11 +93,9 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			})
 			return 400, byteRes
 		}
-
 		if part.FormName() != "images" {
 			continue
 		}
-
 		rawSize, err := io.CopyN(rawBuff, part, MaxSize+1)
 		//DetectContentType need first 512 byte,
 		//in order to be safe, keep file large more than 512 bytes
@@ -156,6 +167,8 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		Hashlist[imgNum] = ImgHash
 		imgNum++
 	}
+
+	database.CreateImage(UserID, Hashlist[0:imgNum])
 
 	//after all img pass check, can they be storge
 	for i := 0; i < imgNum; i++ {
