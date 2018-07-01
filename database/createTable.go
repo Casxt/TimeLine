@@ -81,6 +81,30 @@ func CreateGroupTable(course *sql.Tx) (err error) {
 	return err
 }
 
+//CreateImageTable Create image Table, image recoder the image
+func CreateImageTable(course *sql.Tx) (err error) {
+	course, selfCourse, err := Begin(course)
+	if err != nil {
+		return err
+	}
+	defer GraceCommit(course, selfCourse, err)
+	sqlCmd := `CREATE TABLE 'Image' (
+		'ID'  int NOT NULL AUTO_INCREMENT ,
+		'Hash' int NOT NULL,
+		'UserID'  int NOT NULL,
+		'Time'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		FOREIGN KEY ('UserID') REFERENCES 'User' ('ID'),
+		INDEX ('UserID'),
+		UNIQUE INDEX ('Hash','UserID'),
+		PRIMARY KEY ('ID')
+		)`
+	sqlCmd = strings.Replace(sqlCmd, "'", "`", -1)
+	result, err := course.Exec(sqlCmd)
+	log.Println("Create Table Group, Result:", result, "Error:", err)
+
+	return err
+}
+
 //CreateSliceTable Create Slice Table, Slice is the unite in the line, it has two basic type, memory and Anniversary
 //the visibillty Protect means only people join this group can view, Private means only people create this slice can view
 func CreateSliceTable(course *sql.Tx) (err error) {

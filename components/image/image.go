@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"image"
 	"image/jpeg"
+	"image/png"
 	"io"
 	"log"
 	"net/http"
@@ -18,10 +19,9 @@ import (
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
-	//subPath := req.URL.Path[len("/index"):]
+	//subPath := req.URL.Path[len("/image"):]
 	switch {
 	case req.Method == "POST":
-		var jsonRes map[string]string
 		status, result = UploadImage(res, req)
 	default:
 		result, status, _ = page.GetPage("components", "image", "line.html")
@@ -39,7 +39,6 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		Hashs []string
 	}
 
-	MaxSize := 20 * 1024 * 1024
 	PostReader, err := req.MultipartReader()
 	if err != nil {
 		log.Println(err.Error())
@@ -50,29 +49,45 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		})
 		return 400, byteRes
 	}
-	//TODO 考虑复用？
-	rawBytes := make([]byte, 10*1024*1024)
+
+	MaxSize := int64(20 * 1024 * 1024)
+	rawBuff := bytes.NewBuffer(make([]byte, MaxSize))
+	Hashlist := make([]string, 9)
+	Imglist := make([][]byte, 9)
+	imgNum := 0
 	for {
+		rawBuff.Reset()
 		part, err := PostReader.NextPart()
 		if err == io.EOF {
 			break
-		} else if err != nil {
+		}
+		if err != nil {
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   err.Error(),
-				Hashs: make([]string, 0),
 			})
 			return 400, byteRes
 		}
+		if imgNum >= 9 {
+			byteRes, _ = json.Marshal(ImgUploadRes{
+				State: "Failde",
+				Msg:   "Too many img",
+			})
+			return 400, byteRes
+		}
+		//inorder to call parseContentDisposition()
+		name := part.FormName()
+		if name != "images" {
+			continue
+		}
 
-		rawSize, err := part.Read(rawBytes)
+		rawSize, err := io.CopyN(rawBuff, part, MaxSize+1)
 		//DetectContentType need first 512 byte,
 		//in order to be safe, keep file large more than 512 bytes
 		if rawSize < 512 {
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "File too small",
-				Hashs: make([]string, 0),
 			})
 			return 400, byteRes
 		}
@@ -80,28 +95,41 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "File too big",
-				Hashs: make([]string, 0),
 			})
 			return 400, byteRes
 		}
-		if err != nil {
+
+		if err != nil && err != io.EOF {
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   err.Error(),
-				Hashs: make([]string, 0),
 			})
 			return 400, byteRes
 		}
+		//ReEncode img
 		//Code before already make sure that file large than 512 bytes
 		var img image.Image
+		rawBytes := rawBuff.Bytes()
 		switch http.DetectContentType(rawBytes) {
 		case "image/jpeg":
 			img, err = jpeg.Decode(bytes.NewReader(rawBytes))
 			if err != nil {
+				s := err.Error()
+				log.Println(s)
 				byteRes, _ = json.Marshal(ImgUploadRes{
 					State: "Failde",
 					Msg:   "invalid jpeg file",
-					Hashs: make([]string, 0),
+				})
+				return 400, byteRes
+			}
+		case "image/png":
+			img, err = png.Decode(bytes.NewReader(rawBytes))
+			if err != nil {
+				s := err.Error()
+				log.Println(s)
+				byteRes, _ = json.Marshal(ImgUploadRes{
+					State: "Failde",
+					Msg:   "invalid jpeg file",
 				})
 				return 400, byteRes
 			}
@@ -109,34 +137,40 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "Unsupprot Format",
-				Hashs: make([]string, 0),
 			})
 			return 400, byteRes
 		}
-		buff := bytes.NewBuffer(rawBytes)
-		buff.Reset()
-		jpeg.Encode(buff, img, &jpeg.Options{Quality: 80})
 
-		JpgBytes := buff.Bytes()
+		rawBuff.Reset()
+		jpeg.Encode(rawBuff, img, &jpeg.Options{Quality: 80})
+		//Check img dumplicate
+		JpgBytes := make([]byte, rawBuff.Len())
+		rawBuff.Read(JpgBytes)
 		Hash256 := sha256.New()
 		Hash256.Write(JpgBytes)
 		ImgHash := hex.EncodeToString(Hash256.Sum(nil))
 
-		if err = page.SaveFile(JpgBytes, "components", "line", ImgHash+".jpg"); err != nil {
+		Imglist[imgNum] = JpgBytes
+		Hashlist[imgNum] = ImgHash
+		imgNum++
+	}
+
+	//after all img pass check, can they be storge
+	for i := 0; i < imgNum; i++ {
+		//storge img
+		if err = page.SaveFile(Imglist[i], "static", "image", Hashlist[i]+".jpg"); err != nil {
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   err.Error(),
-				Hashs: make([]string, 0),
 			})
 			return 400, byteRes
 		}
-
 	}
 
 	byteRes, _ = json.Marshal(ImgUploadRes{
 		State: "Success",
-		Msg:   err.Error(),
-		Hashs: make([]string, 0),
+		Msg:   "upload success",
+		Hashs: Hashlist[0:imgNum],
 	})
 	return 200, byteRes
 }

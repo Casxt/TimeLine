@@ -32,6 +32,20 @@ async function JsonRequest(httpmethod, url, data){
     return await response.json();
 }
 
+async function FileRequest(httpmethod, url, data){
+    const request = new Request(url, {
+        credentials: 'include',//接受response中的cookie
+        headers: {
+            'Accept': 'application/json',
+            //'Content-Type': 'multipart/form-data'
+        },
+        method: httpmethod,
+        body: data,
+    });
+    const response = await fetch(request);
+    return await response.json();
+}
+
 
 /*
 String format Space Start

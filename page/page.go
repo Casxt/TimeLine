@@ -73,13 +73,12 @@ func GetFile(names ...string) (File []byte, status int, err error) {
 func SaveFile(bytes []byte, names ...string) (err error) {
 	var absPath string
 	absPath = filepath.FromSlash(path.Join(ProjectPath, path.Join(names...)))
+	//os.ModeAppend in there will not append, but clear and write
+	//if file not exist, will create file
 	err = ioutil.WriteFile(absPath, bytes, os.ModeAppend)
 	if err != nil {
 		log.Println(err.Error())
 		return err
 	}
-	//log.Println(mime.TypeByExtension(path.Ext(names[len(names)-1])))
-	//log.Println(path.Ext(names[len(names)-1]))
-	//res.Header().Add("Content-Type", mime.TypeByExtension(path.Ext(names[len(names)-1])))
 	return nil
 }
