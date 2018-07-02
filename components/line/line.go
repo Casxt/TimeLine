@@ -38,15 +38,8 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 		return status, jsonRes
 	}
 
-	UserID, session := tools.GetLoginState(req)
+	UserID, session := tools.GetLoginState(req, data.Operator)
 	if session == nil {
-		return 400, map[string]string{
-			"State": "Failde",
-			"Msg":   `User Not Sign In`,
-		}
-	}
-	Phone, ok := session.Get("Phone")
-	if !ok || Phone != data.Operator {
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   `User Not Sign In`,

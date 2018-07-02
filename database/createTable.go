@@ -111,12 +111,13 @@ func CreateSliceTable(course *sql.Tx) (err error) {
 	if err != nil {
 		return err
 	}
+	//'Title'  varchar(128) CHARACTER SET utf8 NOT NULL,
+	//		INDEX ('Title'),
 	defer GraceCommit(course, selfCourse, err)
 	sqlCmd := `CREATE TABLE 'Slice' (
 		'ID'  int NOT NULL AUTO_INCREMENT ,
 		'UserID'  int NOT NULL,
 		'LineID'  int NOT NULL,
-		'Title'  varchar(128) CHARACTER SET utf8 NOT NULL,
 		'Content'  varchar(2048) CHARACTER SET utf8 NOT NULL,
 		'Gallery'  varchar(1024) CHARACTER SET utf8 NOT NULL,
 		'Location'  varchar(128) CHARACTER SET utf8 ,
@@ -127,7 +128,6 @@ func CreateSliceTable(course *sql.Tx) (err error) {
 		FOREIGN KEY ('UserID') REFERENCES 'User' ('ID'),
 		INDEX ('LineID'),
 		INDEX ('UserID'),
-		INDEX ('Title'),
 		INDEX ('Content'),
 		PRIMARY KEY ('ID')
 		)`

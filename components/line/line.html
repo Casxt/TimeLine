@@ -1,24 +1,29 @@
 <main role="main" class="container text-center mt-5 mb-5">
     <div class="card mt-3">
-        <form class="card-body cols container">
-            <textarea class="form-control" id="" rows="3"></textarea>
+        <form id="AddSlice-Form" class="card-body cols container">
+            <textarea class="form-control" id="Content" name="Content" rows="3"></textarea>
             <div class="row mt-2 w-auto float-md-right mr-1 ml-1">
                 <div class="custom-file w-auto mr-1 mt-2">
                     <div class="btn btn-primary">
-                        <input type="file" multiple="multiple" style="width: 6rem; opacity: 0; position: absolute; z-index: -1" id="images" onchange="preview(this)">
+                        <input name="imgs" type="file" multiple="multiple" style="width: 6rem; opacity: 0; position: absolute; z-index: -1" id="images"
+                            onchange="preview(this)">
                         <label style="width:6rem;position:relative;margin: 1px" for="images">Choose Img</label>
                     </div>
                 </div>
-                <input class="form-control mr-1 ml-1 mt-2" style="width: 11rem;text-align: center;font-size: 0.85rem;padding: 0.4rem" id="TimePoint"
-                    type="datetime-local" value="">
-                    <!--type="submit" -->
-                <button class="btn btn-primary ml-1 mt-2" type="button" onclick="SubmitSlice()">Submit</button>
+                <select name="Type" class="form-control mr-1 ml-1 mt-2 w-auto" id="Type">
+                    <option value="Memory">Memory</option>
+                    <option value="Anniversary">Anniversary</option>
+                </select>
+                <select name="Visibility" class="form-control mr-1 ml-1 mt-2 w-auto" id="Visibility">
+                    <option value="Protect">Group</option>
+                    <option value="Public">All</option>
+                    <option value="Private">Self</option>
+                </select>
+                <input name="Time" class="form-control mr-1 ml-1 mt-2" style="width: 11.5rem;text-align: center;font-size: 0.85rem;padding: 0.4rem"
+                    id="Time" type="datetime-local" value="">
+                <!--type="submit" -->
+                <button class="btn btn-primary ml-1 mt-2" id="AddSlice-Button" type="button" onclick="SubmitSlice()">Submit</button>
             </div>
-        </form>
-        <form class="card-body cols container" enctype="multipart/form-data" action="/image" method="POST">
-            <input type="file" multiple="multiple" name="images" id="customFile" onchange="preview(this)">
-            <button type="submit">Submit</button>
-
         </form>
         <div class="container mb-3" id="preview">
 
@@ -31,12 +36,18 @@
     </div>
 </main>
 <script type="text/javascript">
-    const now = new Date();
-    document.getElementById('TimePoint').value = now.toISOString().slice(0, 16); //"2018-03-11T16:20";
-    function preview(file) {
+    TimeInput = document.getElementById('Time')
+    //Update Time
+    const cancleHandle = setInterval(() => {
+        const now = new Date();
+        TimeInput.value = now.toISOString().slice(0, 19); //"2018-03-11T16:20";
+    }, 1000)
+
+
+    async function preview(file) {
         if (file.files.length > 9) {
             //TODO: 完善提醒
-            alert("Too much img!");
+            alert("Too much img! max 9 imgs in one time");
             return;
         }
         const prevDiv = document.getElementById('preview');
@@ -56,11 +67,44 @@
     }
 
     async function SubmitSlice() {
+        const B = new AnimeButton("CheckAccount-Button");
+        const Closer = B.OnLoding("disabled", "Checking...");
+
+        //Upload Img
         let imgs = new FormData()
         for (const img of document.getElementById("images").files) {
             imgs.append('images', img);
         }
         const json = await FileRequest('POST', '/image', imgs);
-        console.log(json);
+
+        if (json.State == "Success") {
+            //Nothing but continue
+        } else {
+            Closer();
+            B.Alert("btn-warning btn ml-1 mt-2", json.Msg, 3000);
+            return;
+        }
+
+        //Get Location
+        let Latitude = location.coords.latitude; //纬度
+        let Longitude = location.coords.longitude; //经度
+        let Accuracy = location.coords.accuracy;
+
+        if (Latitude == undefined ||
+            Longitude == undefined ||
+            Accuracy == undefined) {
+            Latitude = 0;
+            Longitude = 0;
+            Accuracy = 0;
+        }
+
+        let formData = new FormData(document.getElementById("AddSlice-Form"));
+        formData.append("Latitude", Latitude);
+        formData.append("Longitude", Longitude);
+        formData.append("Gallary", json.Hashs);
+        formData.append("Operator", Cookies.Phone);
+        formData.delete("imgs");
+        Cookies.Phone
+
     }
 </script>
