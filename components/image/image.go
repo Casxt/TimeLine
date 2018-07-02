@@ -13,7 +13,7 @@ import (
 	"net/http"
 
 	"github.com/Casxt/TimeLine/database"
-	"github.com/Casxt/TimeLine/session"
+	"github.com/Casxt/TimeLine/tools"
 
 	"github.com/Casxt/TimeLine/page"
 )
@@ -44,13 +44,12 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		Hashs []string
 	}
 
-	Session, _ := session.Auto(res, req)
-	UserID, ok := Session.Get("ID")
+	UserID, _ := tools.GetLoginState(req)
 	//Check User Login At first
 	//For Some Reason, client Cannot receive this msg
 	//I don't know why
 	//TODO: fix this bug
-	if !ok {
+	if UserID == "" {
 		byteRes, _ = json.Marshal(ImgUploadRes{
 			State: "Failde",
 			Msg:   "User Not SignIn",

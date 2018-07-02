@@ -2,8 +2,11 @@ package line
 
 import (
 	"net/http"
+	"strings"
 
+	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/tools"
 )
 
 //Route decide page
@@ -11,10 +14,10 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
 
-	//subPath := req.URL.Path[len("/index"):]
+	subPath := req.URL.Path[len("/line"):]
 	switch {
-	//case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
-	//	result, status, _ = page.GetFile("components", "signin", "signup.js")
+	case strings.HasPrefix(strings.ToLower(subPath), "create"):
+		result, status, _ = page.GetPage("components", "line", "createLine.html")
 	default:
 		result, status, _ = page.GetPage("components", "line", "line.html")
 	}
@@ -23,16 +26,54 @@ func Route(res http.ResponseWriter, req *http.Request) {
 }
 
 //CreateLine will create a new line with specific name
+//TODO: Limit User num of Line
 func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	type Data struct {
 		Operator string `json:"Operator"`
-		Name     string `json:"Name"`
+		LineName string `json:"LineName"`
+	}
+	var data Data
+
+	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
+		return status, jsonRes
 	}
 
-	return 400, map[string]string{
-		"State": "Failde",
-		"Msg":   "Invilde Parameter",
+	UserID, session := tools.GetLoginState(req)
+	if session == nil {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   `User Not Sign In`,
+		}
 	}
+	Phone, ok := session.Get("Phone")
+	if !ok || Phone != data.Operator {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   `User Not Sign In`,
+		}
+	}
+
+	err := database.CreateLine(data.LineName, UserID)
+	if err != nil {
+		switch err.Error() {
+		case "Line Already Exist":
+			return 400, map[string]string{
+				"State": "Failde",
+				"Msg":   "Line Name Already be Used",
+			}
+
+		default:
+			return 400, map[string]string{
+				"State": "Failde",
+				"Msg":   "Line Name Already be Used",
+			}
+		}
+	}
+	return 200, map[string]string{
+		"State": "Success",
+		"Msg":   "Line create success",
+	}
+
 }
 
 //AddUser will will add user to specific line

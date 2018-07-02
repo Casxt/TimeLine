@@ -28,8 +28,10 @@ func route(res http.ResponseWriter, req *http.Request) {
 		page.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/image"):
 		image.Route(res, req)
-	default:
+	case strings.HasPrefix(strings.ToLower(path), "/line"):
 		line.Route(res, req)
+	default:
+		//line.Route(res, req)
 	}
 }
 

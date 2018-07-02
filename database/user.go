@@ -97,7 +97,6 @@ func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, ErrorMsg e
 			log.Println("CreateUser:", DBErr.Error())
 			return "", "", errors.New("User Create Failde")
 		}
-
 	}
 
 	return "Unverify User", Pass, nil

@@ -44,9 +44,8 @@ func CreateLineTable(course *sql.Tx) (err error) {
 	sqlCmd := `CREATE TABLE 'Line' (
 		'ID'  int NOT NULL AUTO_INCREMENT ,
 		'Name'  varchar(128) CHARACTER SET utf8 NOT NULL,
-		'Style'  text CHARACTER SET utf8 NOT NULL,
 		'Time'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
-		INDEX ('Name'),
+		UNIQUE INDEX ('Name'),
 		PRIMARY KEY ('ID')
 		)`
 	sqlCmd = strings.Replace(sqlCmd, "'", "`", -1)

@@ -3,6 +3,8 @@ package tools
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/Casxt/TimeLine/session"
 )
 
 //GetPostJSON get json in req, by using data.
@@ -17,4 +19,22 @@ func GetPostJSON(req *http.Request, data interface{}) (status int, jsonRes map[s
 		return 400, jsonRes
 	}
 	return 200, nil
+}
+
+//GetLoginState will check wether user have login
+//and return ID and session
+func GetLoginState(req *http.Request) (UserID string, Session session.IO) {
+	c, err := req.Cookie("SessionID")
+	if err != nil {
+		return "", nil
+	}
+	s := session.Get(c.Value, req)
+	if s == nil {
+		return "", nil
+	}
+	ID, ok := s.Get("ID")
+	if !ok {
+		return "", nil
+	}
+	return ID, s
 }

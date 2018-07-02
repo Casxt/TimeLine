@@ -18,9 +18,9 @@ func TestCreateUser(t *testing.T) {
 //TestGetUserByPhone
 func TestGetUserByPhone(t *testing.T) {
 	Open()
-	Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime, err := GetUserByPhone("18110020001")
+	ID, Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime, err := GetUserByPhone("18110020001")
 	if err != nil {
 		t.Error("TestGetUserByPhone Error", err)
 	}
-	t.Log(Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime)
+	t.Log(ID, Mail, Pass, Gender, Salt, SaltPass, ProfilePic, SignInTime)
 }

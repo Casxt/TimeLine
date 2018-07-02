@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Casxt/TimeLine/components/line"
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 )
@@ -30,6 +31,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = signin.CheckAccount(res, req)
 	case strings.HasPrefix(subPath, "SignIn"):
 		resCode, jsonRes = signin.SignIn(res, req)
+	case strings.HasPrefix(subPath, "CreateLine"):
+		resCode, jsonRes = line.CreateLine(res, req)
 	default:
 		resCode = 200
 		jsonRes = map[string]string{

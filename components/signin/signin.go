@@ -58,12 +58,13 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 	mailRegexp := regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 	phoneRegexp := regexp.MustCompile(`^(?:(?:\(?(?:00|\+)([1-4]\d\d|[1-9]\d?)\)?)?[\-\.\ \\\/]?)?((?:\(?\d{1,}\)?[\-\.\ \\\/]?){0,})(?:[\-\.\ \\\/]?(?:#|ext\.?|extension|x)[\-\.\ \\\/]?(\d+))?$`)
 
-	var ID, NickName, Salt, SaltPass string
+	var ID, Phone, NickName, Salt, SaltPass string
 	switch {
 	case phoneRegexp.MatchString(data.Account):
 		ID, _, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByPhone(data.Account)
+		Phone = data.Account
 	case mailRegexp.MatchString(data.Account):
-		ID, _, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByMail(data.Account)
+		ID, Phone, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByMail(data.Account)
 	default:
 		//不匹配邮箱或电话
 		jsonRes = map[string]string{
@@ -107,6 +108,7 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 	//Save some info of account, if login failed, it will be delete
 	session.Put("ID", ID, 300)
 	session.Put("NickName", NickName, 300)
+	session.Put("Phone", Phone, 300)
 	jsonRes = map[string]string{
 		"State":        "Success",
 		"Msg":          "User Account Exist",
@@ -143,6 +145,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if SaltPass, ok = session.Get("SaltPass"); !ok {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SaltPass of Session not found",
@@ -152,6 +155,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if SignInVerify, ok = session.Get("SignInVerify"); !ok {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SignInVerify of Session not found",
@@ -164,6 +168,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if key, err = hex.DecodeString(SaltPass); err != nil {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter SaltPass",
@@ -173,6 +178,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if ciphertext, err = hex.DecodeString(data.Encrypted); err != nil {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter Encrypted",
@@ -182,6 +188,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if nonce, err = hex.DecodeString(data.IV); err != nil {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter IV",
@@ -202,6 +209,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if err != nil {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Decrypted failed",
@@ -210,6 +218,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if string(plaintext) != SignInVerify {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Compare failed",
@@ -219,6 +228,7 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if !ok {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Timeout",
@@ -228,6 +238,17 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if !ok {
 		session.Delete("ID")
 		session.Delete("NickName")
+		session.Delete("Phone")
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Timeout",
+		}
+	}
+	Phone, ok := session.Get("Phone")
+	if !ok {
+		session.Delete("ID")
+		session.Delete("NickName")
+		session.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Timeout",
@@ -235,6 +256,9 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 	session.Put("ID", ID, 60*60*24*30)
 	session.Put("NickName", NickName, 60*60*24*30)
+	session.Put("Phone", Phone, 60*60*24*30)
+	http.SetCookie(res, &http.Cookie{Name: "Phone", Value: Phone, Path: "/", MaxAge: 30 * 86400})
+	http.SetCookie(res, &http.Cookie{Name: "NickName", Value: NickName, Path: "/", MaxAge: 30 * 86400})
 	return 200, map[string]string{
 		"State": "Success",
 		"Msg":   "Sign In Success",

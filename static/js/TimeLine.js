@@ -1,3 +1,16 @@
+
+/**
+ * Cookies Addons
+ */
+Object.defineProperty(window, "Cookies", {
+    get: function() {
+        return document.cookie.split(';').reduce(function(cookies, cookie) {
+            cookies[cookie.split("=")[0]] = unescape(cookie.split("=")[1]);
+            return cookies
+        }, {});
+    }
+});
+
 /**
  * FormData Addons
  */
