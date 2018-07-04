@@ -14,7 +14,7 @@ func CreateSlice(LineName, UserID, Content, Gallery, Type, Visibility, Location,
 	}
 	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
-	_, DBErr = course.Exec("INSERT INTO `Slice` (`UserID`.`LineID`,`Content`,`Gallery`,`Location`,`Type`,`Visibility`,`Time`) SELECT `Line`.`ID`, ?, ?, ?, ?, ?, ?, ? FROM `Line` WHERE `Line`.`Name`=?",
+	_, DBErr = course.Exec("INSERT INTO `Slice` (`UserID`,`LineID`,`Content`,`Gallery`,`Location`,`Type`,`Visibility`,`Time`) SELECT  ?, `Line`.`ID`, ?, ?, ?, ?, ?, ? FROM `Line` WHERE `Line`.`Name`=?",
 		UserID, Content, Gallery, Location, Type, Visibility, Time, LineName)
 	if DBErr != nil {
 		switch {

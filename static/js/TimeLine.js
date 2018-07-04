@@ -109,9 +109,10 @@ class AnimeButton {
     OnLoding(className, innerHTML) {
         this.jqButton.addClass(className);
         const OldHtml = this.button.innerHTML
-
+        this.button.disabled = true;
         this.button.innerHTML = innerHTML;
         return () => {
+            this.button.disabled = false;
             this.jqButton.removeClass(className);
             this.button.innerHTML = OldHtml;
         }

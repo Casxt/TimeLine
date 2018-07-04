@@ -44,7 +44,8 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		Hashs []string
 	}
 
-	UserID, _ := tools.GetLoginState(req)
+	//CheckUser
+	UserID, _ := tools.GetLoginStateOfCookie(req)
 	//Check User Login At first
 	//For Some Reason, client Cannot receive this msg
 	//I don't know why

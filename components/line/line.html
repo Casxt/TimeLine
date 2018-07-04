@@ -19,9 +19,11 @@
                     <option value="Public">All</option>
                     <option value="Private">Self</option>
                 </select>
-                <input name="Time" class="form-control mr-1 ml-1 mt-2" style="width: 11.5rem;text-align: center;font-size: 0.85rem;padding: 0.4rem"
-                    id="Time" type="datetime-local" value="">
-                <!--type="submit" -->
+                <input id="Latitude" name="Latitude" type="hidden" value="0">
+                <input id="Longitude" name="Longitude" type="hidden" value="0">
+                <input id="Time" name="Time" class="form-control mr-1 ml-1 mt-2 w-auto" style="text-align: center;font-size: 0.85rem;padding: 0.4rem"
+                    type="datetime-local" value="">
+                <!--type="submit" width: 11.5rem;-->
                 <button class="btn btn-primary ml-1 mt-2" id="AddSlice-Button" type="button" onclick="SubmitSlice()">Submit</button>
             </div>
         </form>
@@ -36,12 +38,22 @@
     </div>
 </main>
 <script type="text/javascript">
-    TimeInput = document.getElementById('Time')
-    //Update Time
-    const cancleHandle = setInterval(() => {
-        const now = new Date();
-        TimeInput.value = now.toISOString().slice(0, 19); //"2018-03-11T16:20";
-    }, 1000)
+    TimeInput = document.getElementById('Time');
+    latitudeInput = document.getElementById('Latitude');
+    longitudeInput = document.getElementById('Longitude');
+    //Update Time and location
+    function updateInfo() {
+        const offset = new Date();
+        const now = new Date(offset.getTime() - offset.getTimezoneOffset() * 60000);
+        TimeInput.value = now.toISOString().slice(0, 16);
+        navigator.geolocation.getCurrentPosition((location) => {
+            console.log(location.coords.latitude);
+            latitudeInput.value = location.coords.latitude; //纬度
+            longitudeInput.value = location.coords.longitude; //经度
+        });
+    }
+    updateInfo();
+    const cancleHandle = setInterval(updateInfo, 60 * 1000);
 
 
     async function preview(file) {
@@ -56,7 +68,7 @@
         let reader = new FileReader();
         reader.onload = function (evt) {
             prevDiv.innerHTML += '<img src="' + evt.target.result +
-                '" class="rounded float-left w-25 md-2 mt-2 ml-3 img-thumbnail"/>'; //style="width: 30%;"
+                '" class="rounded float-left md-2 mt-2 ml-3 img-thumbnail w-25" />'; //w-25, style="width:100%"
         }
         reader.onloadend = function () {
             if (++count < file.files.length) {
@@ -67,44 +79,43 @@
     }
 
     async function SubmitSlice() {
-        const B = new AnimeButton("CheckAccount-Button");
-        const Closer = B.OnLoding("disabled", "Checking...");
+        const B = new AnimeButton("AddSlice-Button");
+        const Closer = B.OnLoding("disabled", "Submitting...");
 
-        //Upload Img
-        let imgs = new FormData()
-        for (const img of document.getElementById("images").files) {
-            imgs.append('images', img);
+        imgInput = document.getElementById("images");
+        let Imgjson = undefined
+        if (imgInput.files.length > 0) {
+            //Upload Img
+            let imgs = new FormData()
+            for (const img of imgInput.files) {
+                imgs.append('images', img);
+            }
+            Imgjson = await FileRequest('POST', '/image', imgs);
+
+            if (Imgjson.State == "Success") {
+                //Nothing but continue
+            } else {
+                Closer();
+                B.Alert("btn-warning btn ml-1 mt-2", Imgjson.Msg, 3000);
+                return;
+            }
         }
-        const json = await FileRequest('POST', '/image', imgs);
-
-        if (json.State == "Success") {
-            //Nothing but continue
-        } else {
-            Closer();
-            B.Alert("btn-warning btn ml-1 mt-2", json.Msg, 3000);
-            return;
-        }
-
-        //Get Location
-        let Latitude = location.coords.latitude; //纬度
-        let Longitude = location.coords.longitude; //经度
-        let Accuracy = location.coords.accuracy;
-
-        if (Latitude == undefined ||
-            Longitude == undefined ||
-            Accuracy == undefined) {
-            Latitude = 0;
-            Longitude = 0;
-            Accuracy = 0;
-        }
-
         let formData = new FormData(document.getElementById("AddSlice-Form"));
-        formData.append("Latitude", Latitude);
-        formData.append("Longitude", Longitude);
-        formData.append("Gallary", json.Hashs);
         formData.append("Operator", Cookies.Phone);
         formData.delete("imgs");
-        Cookies.Phone
-
+        formData.append("LineName", "kkxx");
+        let Data = formData.ToArray();
+        if (imgInput.files.length > 0) {
+            Data.Gallery = Imgjson.Hashs;
+        } else {
+            Data.Gallery = [];
+        }
+        const Slicejson = await JsonRequest('POST', '/api/AddSlice', Data);
+        if (Slicejson.State == "Success") {
+            Closer();
+        } else {
+            Closer();
+            B.Alert("btn-warning btn ml-1 mt-2", Slicejson.Msg, 3000);
+        }
     }
 </script>

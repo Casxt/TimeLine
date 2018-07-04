@@ -30,7 +30,7 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 		return status, jsonRes
 	}
 
-	UserID, Session := tools.GetLoginState(req, data.Operator)
+	UserID, Session := tools.GetLoginStateOfOperator(req, data.Operator)
 	if Session == nil {
 		return 400, map[string]string{
 			"State": "Failde",
@@ -42,20 +42,33 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 	//TODO: Check Gallery
 	//TODO: Check Content Visibility Longitude Latitude LineName
 
+	var galleryString string
 	//Gallery into hash1,hahs2,...hashn, format
 	imgNum := len(data.Gallery)
-	//64*imgNum+imgNum
-	buff := bytes.NewBuffer(make([]byte, 65*imgNum))
-	for _, Hash := range data.Gallery {
-		buff.Write([]byte(Hash))
-		buff.Write([]byte(","))
+	if imgNum > 0 {
+		//64*imgNum+imgNum
+		buff := bytes.NewBuffer(make([]byte, 65*imgNum))
+		buff.Reset()
+		for _, Hash := range data.Gallery {
+			buff.WriteString(Hash)
+			buff.Write([]byte(","))
+		}
+		galleryString = string(buff.Bytes()[0 : buff.Len()-1])
+	} else {
+		galleryString = ""
 	}
+
 	Location := data.Longitude + "," + data.Latitude
-	database.CreateSlice(data.LineName, UserID, data.Content, string(buff.Bytes()[0:buff.Len()]), data.Type, data.Visibility, Location, data.Time)
-	//TODO sql
-	jsonRes = map[string]string{
+	//TODO: Check How Many Slice User have create today
+	err := database.CreateSlice(data.LineName, UserID, data.Content, galleryString, data.Type, data.Visibility, Location, data.Time)
+	if err != nil {
+		return 200, map[string]string{
+			"State": "Success",
+			"Msg":   err.Error(),
+		}
+	}
+	return 200, map[string]string{
 		"State": "Success",
 		"Msg":   "slice add success",
 	}
-	return 200, jsonRes
 }

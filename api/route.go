@@ -33,6 +33,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = signin.SignIn(res, req)
 	case strings.HasPrefix(subPath, "CreateLine"):
 		resCode, jsonRes = line.CreateLine(res, req)
+	case strings.HasPrefix(subPath, "AddSlice"):
+		resCode, jsonRes = line.AddSlice(res, req)
 	default:
 		resCode = 200
 		jsonRes = map[string]string{

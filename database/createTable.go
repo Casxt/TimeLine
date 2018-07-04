@@ -123,12 +123,15 @@ func CreateSliceTable(course *sql.Tx) (err error) {
 		'Location'  varchar(128) CHARACTER SET utf8 ,
 		'Type'  enum("Memory","Anniversary") DEFAULT "Memory",
 		'Visibility'  enum("Private","Public","Protect") DEFAULT "Protect",
-		'Time'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		'Time'  datetime NOT NULL,
+		'CreateTime'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY ('LineID') REFERENCES 'Line' ('ID'),
 		FOREIGN KEY ('UserID') REFERENCES 'User' ('ID'),
 		INDEX ('LineID'),
 		INDEX ('UserID'),
 		INDEX ('Content'),
+		INDEX ('Time'),
+		INDEX ('CreateTime'),
 		PRIMARY KEY ('ID')
 		)`
 	sqlCmd = strings.Replace(sqlCmd, "'", "`", -1)
