@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/tools"
@@ -22,16 +23,43 @@ import (
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
-	//subPath := req.URL.Path[len("/image"):]
+	subPath := req.URL.Path[len("/image"):]
 	switch {
 	case req.Method == "POST":
 		status, result = UploadImage(res, req)
-
+		//match /image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
+	case regexp.MustCompile("^/[a-z0-9]{64}/?$").MatchString(subPath):
+		status, result = GetImage(res, req)
 	default:
 		status, result, _ = page.GetPage("components", "image", "line.html")
 	}
 	res.WriteHeader(status)
 	res.Write(result)
+}
+
+//GetImage retuen img if user have permission
+func GetImage(res http.ResponseWriter, req *http.Request) (status int, byteRes []byte) {
+
+	UserID, _ := tools.GetLoginStateOfCookie(req)
+	if UserID == "" {
+		resByte, _ := json.Marshal(map[string]string{
+			"State": "Failde",
+			"Msg":   "User Not Sign In",
+		})
+		return 400, resByte
+	}
+	//imgName = 8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
+	imgName := req.URL.Path[len("/image/") : len("/image/")+64]
+	_, err := database.CheckImgInfo(imgName, UserID)
+	if err != nil {
+		resByte, _ := json.Marshal(map[string]string{
+			"State": "Failde",
+			"Msg":   "User Not Have This Img",
+		})
+		return 400, resByte
+	}
+	status, byteRes, _ = page.GetFile("static", "image", imgName+".jpg")
+	return status, byteRes
 }
 
 //UploadImage will procss img uploaded, resize and caculate hash and storge

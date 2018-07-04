@@ -16,6 +16,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 
 	subPath := req.URL.Path[len("/line"):]
 	switch {
+	//match /linecreate*
 	case strings.HasPrefix(strings.ToLower(subPath), "create"):
 		status, result, _ = page.GetPage("components", "line", "createLine.html")
 	default:
