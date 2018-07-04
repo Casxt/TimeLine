@@ -8,21 +8,27 @@ import (
 	"github.com/Casxt/TimeLine/tools"
 )
 
+/*
+func GetSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+
+}
+*/
 //AddSlice is a Api interface
 //add slice to a line
 func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	//var err error
 	//Title      string   `json:"LineName"`
 	type Data struct {
-		Operator   string   `json:"Operator"`
-		LineName   string   `json:"LineName"`
-		Content    string   `json:"Content"`
-		Gallery    []string `json:"Gallery"`
-		Type       string   `json:"Type"`
-		Visibility string   `json:"Visibility"`
-		Longitude  string   `json:"Longitude"` //精度
-		Latitude   string   `json:"Latitude"`  //纬度
-		Time       string   `json:"Time"`
+		Operator   string
+		LineName   string
+		Content    string
+		Gallery    []string
+		Type       string
+		Visibility string
+		Longitude  string //精度
+		Latitude   string //纬度
+		Time       string
+		SessionID  string
 	}
 	var data Data
 
@@ -30,7 +36,7 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 		return status, jsonRes
 	}
 
-	UserID, Session := tools.GetLoginStateOfOperator(req, data.Operator)
+	UserID, Session := tools.GetLoginStateOfOperator(req, data.SessionID, data.Operator)
 	if Session == nil {
 		return 400, map[string]string{
 			"State": "Failde",

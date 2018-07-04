@@ -4,6 +4,7 @@
         <h1 class="h3 mb-3 font-weight-normal mt-3">Create New Line</h1>
         <label class="sr-only">LineName</label>
         <input type="text" name="LineName" class="form-control mt-3" placeholder="LineName" required autofocus>
+        <input id="SessionID" type="hidden" name="SessionID" value="">
         <button id="CreateLine-Button" class="btn-primary btn btn-lg btn-block mt-5" type="button" onclick="CreateLine()">Create</button>
     </form>
 
@@ -13,12 +14,13 @@
 <script type="text/javascript">
     async function CreateLine() {
         let formData = new FormData(document.getElementById("CreateLine-Form"));
-        formData.append("Operator",Cookies.Phone)
-        const Data = formData.ToArray()
+        formData.append("Operator",Cookies.Phone);
+        let Data = formData.ToArray();
+        Data.SessionID = Cookies.SessionID;
         const B = new AnimeButton("CreateLine-Button");
         const Closer = B.OnLoding("disabled", "Checking...");
 
-        const json = await JsonRequest('POST', '/api/CreateLine', Data)
+        const json = await JsonRequest('POST', '/api/CreateLine', Data);
 
         if (json.State == "Success") {
             Closer();

@@ -30,8 +30,9 @@ func Route(res http.ResponseWriter, req *http.Request) {
 //TODO: Limit User num of Line
 func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	type Data struct {
-		Operator string `json:"Operator"`
-		LineName string `json:"LineName"`
+		Operator  string
+		LineName  string
+		SessionID string
 	}
 	var data Data
 
@@ -39,7 +40,7 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 		return status, jsonRes
 	}
 
-	UserID, session := tools.GetLoginStateOfOperator(req, data.Operator)
+	UserID, session := tools.GetLoginStateOfOperator(req, data.SessionID, data.Operator)
 	if session == nil {
 		return 400, map[string]string{
 			"State": "Failde",

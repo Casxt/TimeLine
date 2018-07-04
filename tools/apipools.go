@@ -23,12 +23,8 @@ func GetPostJSON(req *http.Request, data interface{}) (status int, jsonRes map[s
 
 //GetLoginStateOfOperator will check wether user have login and check Operator
 //and return ID and session
-func GetLoginStateOfOperator(req *http.Request, Operator string) (UserID string, Session session.IO) {
-	c, err := req.Cookie("SessionID")
-	if err != nil {
-		return "", nil
-	}
-	s := session.Get(c.Value, req)
+func GetLoginStateOfOperator(req *http.Request, SssionID, Operator string) (UserID string, Session session.IO) {
+	s := session.Get(SssionID, req)
 	if s == nil {
 		return "", nil
 	}
