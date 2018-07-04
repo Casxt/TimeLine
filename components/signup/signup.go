@@ -21,7 +21,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	//	result, status, _ = page.GetFile("components", "signup", "signup.js")
 	//	res.Header().Add("Content-Type", "application/x-javascript")
 	default:
-		result, status, _ = page.GetPage("components", "signup", "signup.html")
+		status, result, _ = page.GetPage("components", "signup", "signup.html")
 
 	}
 	res.WriteHeader(status)

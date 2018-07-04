@@ -25,7 +25,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	//case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
 	//	result, status, _ = page.GetFile("components", "signin", "signup.js")
 	default:
-		result, status, _ = page.GetPage("components", "signin", "signin.html")
+		status, result, _ = page.GetPage("components", "signin", "signin.html")
 
 	}
 	res.WriteHeader(status)

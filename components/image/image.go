@@ -28,7 +28,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		status, result = UploadImage(res, req)
 
 	default:
-		result, status, _ = page.GetPage("components", "image", "line.html")
+		status, result, _ = page.GetPage("components", "image", "line.html")
 	}
 	res.WriteHeader(status)
 	res.Write(result)

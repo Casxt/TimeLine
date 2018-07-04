@@ -13,7 +13,7 @@ import (
 var ProjectPath = "C:\\Users\\Surface\\go\\src\\github.com\\Casxt\\TimeLine"
 
 //GetPage return the builted html
-func GetPage(names ...string) (Page []byte, status int, err error) {
+func GetPage(names ...string) (status int, Page []byte, err error) {
 	var absPath string
 	var content []byte
 	var buf *bytes.Buffer
@@ -25,7 +25,7 @@ func GetPage(names ...string) (Page []byte, status int, err error) {
 		absPath = filepath.FromSlash(path.Join(ProjectPath, "static", "404.html"))
 		content, err = ioutil.ReadFile(absPath)
 		buf = bytes.NewBuffer(content)
-		return buf.Bytes(), 404, err
+		return 404, buf.Bytes(), err
 	}
 
 	absPath = filepath.FromSlash(path.Join(ProjectPath, path.Join(names...)))
@@ -35,7 +35,7 @@ func GetPage(names ...string) (Page []byte, status int, err error) {
 		absPath = filepath.FromSlash(path.Join(ProjectPath, "static", "404.html"))
 		content, err = ioutil.ReadFile(absPath)
 		buf = bytes.NewBuffer(content)
-		return buf.Bytes(), 404, err
+		return 404, buf.Bytes(), err
 	}
 
 	absPath = filepath.FromSlash(path.Join(ProjectPath, "static", "Footer.html"))
@@ -45,14 +45,14 @@ func GetPage(names ...string) (Page []byte, status int, err error) {
 		absPath = filepath.FromSlash(path.Join(ProjectPath, "static", "404.html"))
 		content, err = ioutil.ReadFile(absPath)
 		buf = bytes.NewBuffer(content)
-		return buf.Bytes(), 404, err
+		return 404, buf.Bytes(), err
 	}
 
-	return buf.Bytes(), 200, err
+	return 404, buf.Bytes(), err
 }
 
 //GetFile Get static file
-func GetFile(names ...string) (File []byte, status int, err error) {
+func GetFile(names ...string) (status int, File []byte, err error) {
 	var absPath string
 	var content []byte
 	//res http.ResponseWriter,
@@ -61,12 +61,12 @@ func GetFile(names ...string) (File []byte, status int, err error) {
 
 	if err != nil {
 		log.Println(err.Error())
-		return nil, 500, err
+		return 500, nil, err
 	}
 	//log.Println(mime.TypeByExtension(path.Ext(names[len(names)-1])))
 	//log.Println(path.Ext(names[len(names)-1]))
 	//res.Header().Add("Content-Type", mime.TypeByExtension(path.Ext(names[len(names)-1])))
-	return content, 200, err
+	return 200, content, err
 }
 
 //SaveFile save static file
