@@ -61,7 +61,7 @@ func Get(sessionID string, req *http.Request) IO {
 	return nil
 }
 
-//Auto will get session,
+//Auto will check-get session, if failed will create new one,
 //if sessionID empty, will try to find sessionID in req cookie
 //if no vaild session
 //it will create a new session,and reurn second value as true

@@ -2,10 +2,11 @@
 /**
  * Cookies Addons
  * TODO: split(/;\s?/) should have change and not test in Edge and IOS
+ * Work with Edge
  */
 Object.defineProperty(window, "Cookies", {
     get: function() {
-        return document.cookie.split(/;\s?/).reduce(function(cookies, cookie) {
+        return document.cookie.split("; ").reduce(function(cookies, cookie) {
             const cookieitem = cookie.split("=");
             cookies[cookieitem[0]] = unescape(cookieitem[1]);
             return cookies
