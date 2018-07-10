@@ -46,17 +46,30 @@
     </div>
 </main>
 <script type="text/javascript">
+
     TimeInput = document.getElementById('Time');
     latitudeInput = document.getElementById('Latitude');
     longitudeInput = document.getElementById('Longitude');
-
+    const re = /^https?:\/\/\S+?\/line\/([^/^\s]+)\/?/g;
+    const LineName = re.exec(window.location.href)[1];
+    
     //Get Slice of line
-    function GetSlice(subPath) {
-        const re = /^https?:\/\/\S+?\/line\/([^/^\s]+)\/?/g;
-        const subPath = re.exec(window.location.href)[1];
+    async function GetSlice(LineName) {
+        let Data = {
+            Operator : Cookies.Phone,
+            SessionID : Cookies.SessionID,
+            LineName : LineName,
+            PageNum : 1
+        }
+        const Slices = await JsonRequest('POST', '/api/GetSlices', Data);
+        console.log(Slices);
     }
+    window.onload = async ()=>{
+        GetSlice(LineName);
+    }
+   
     //Update Time and location
-    function updateInfo() {
+    async function updateInfo() {
         const offset = new Date();
         const now = new Date(offset.getTime() - offset.getTimezoneOffset() * 60000);
         TimeInput.value = now.toISOString().slice(0, 16);
@@ -115,10 +128,10 @@
             }
         }
         let formData = new FormData(document.getElementById("AddSlice-Form"));
-        formData.append("Operator", Cookies.Phone);
         formData.delete("imgs");
-        formData.append("LineName", "kkxx");
         let Data = formData.ToArray();
+        Data.Operator = Cookies.Phone;
+        Data.LineName = LineName;
         if (imgInput.files.length > 0) {
             Data.Gallery = Imgjson.Hashs;
         } else {

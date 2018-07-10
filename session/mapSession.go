@@ -72,23 +72,23 @@ func Auto(res http.ResponseWriter, req *http.Request) (session IO, NewSession bo
 	var err error
 	if cookie, err = req.Cookie("SessionID"); err != nil {
 		session = New(req)
-		http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+		http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", MaxAge: 30 * 86400}) //, HttpOnly: true
 		return session, true
 	}
 	sessionID := cookie.Value
 
 	if session, ok := sessionMap[sessionID]; ok {
 		if check(session, req) {
-			http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+			http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", MaxAge: 30 * 86400}) //, HttpOnly: true
 			return session, false
 		}
 		// session extra info not match, create a new one
 		session = New(req)
-		http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+		http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", MaxAge: 30 * 86400}) //, HttpOnly: true
 		return session, true
 	}
 	session = New(req)
-	http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", HttpOnly: true, MaxAge: 30 * 86400})
+	http.SetCookie(res, &http.Cookie{Name: "SessionID", Value: session.ID(), Path: "/", MaxAge: 30 * 86400}) //, HttpOnly: true
 	return session, true
 
 }

@@ -1,7 +1,6 @@
 package line
 
 import (
-	"bytes"
 	"log"
 	"net/http"
 
@@ -9,12 +8,13 @@ import (
 	"github.com/Casxt/TimeLine/tools"
 )
 
+//GetSlices GetSlices
 func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
 	type Data struct {
-		SessionID string
-		Operator  string
-		LineName  string
-		PageNum   int //1-n
+		SessionID string `json:"SessionID"`
+		Operator  string `json:"Operator"`
+		LineName  string `json:"LineName"`
+		//PageNum   string `json:"PageNum"`
 	}
 	type SlicesInfo struct {
 		State  string
@@ -30,8 +30,8 @@ func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes 
 	if Session == nil {
 		//Do Nothing
 	}
-
-	Slices, err := database.GetSlices(data.LineName, UserID, data.PageNum)
+	//PageNum, _ := strconv.Atoi(data.PageNum)
+	Slices, err := database.GetSlices(data.LineName, UserID, 1)
 	if err != nil {
 		log.Println(err.Error())
 		return 500, map[string]string{
@@ -41,8 +41,8 @@ func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes 
 		}
 	}
 	return 200, SlicesInfo{
-		State:  "Failde",
-		Msg:    "User  not SignIn",
+		State:  "Success",
+		Msg:    "Slices Get!",
 		Slices: Slices,
 	}
 }
@@ -82,25 +82,9 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 	//TODO: Check Gallery
 	//TODO: Check Content Visibility Longitude Latitude LineName
 
-	var galleryString string
-	//Gallery into hash1,hahs2,...hashn, format
-	imgNum := len(data.Gallery)
-	if imgNum > 0 {
-		//64*imgNum+imgNum
-		buff := bytes.NewBuffer(make([]byte, 65*imgNum))
-		buff.Reset()
-		for _, Hash := range data.Gallery {
-			buff.WriteString(Hash)
-			buff.Write([]byte(","))
-		}
-		galleryString = string(buff.Bytes()[0 : buff.Len()-1])
-	} else {
-		galleryString = ""
-	}
-
 	Location := data.Longitude + "," + data.Latitude
 	//TODO: Check How Many Slice User have create today
-	err := database.CreateSlice(data.LineName, UserID, data.Content, galleryString, data.Type, data.Visibility, Location, data.Time)
+	err := database.CreateSlice(data.LineName, UserID, data.Content, data.Gallery, data.Type, data.Visibility, Location, data.Time)
 	if err != nil {
 		return 200, map[string]string{
 			"State": "Success",

@@ -34,7 +34,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode = 200
 		jsonRes = map[string]string{
 			"State": "Succesful",
-			"Msg":   "test Successful",
+			"Msg":   "Api is working",
 		}
 	}
 

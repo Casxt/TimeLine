@@ -1,6 +1,7 @@
 package database
 
 import (
+	"bytes"
 	"database/sql"
 	"errors"
 	"log"
@@ -11,6 +12,7 @@ import (
 //SliceInfo struct use in GetSlice func
 type SliceInfo struct {
 	UserName   string
+	Gallery    []string
 	Content    string
 	Type       string
 	Visibility string
@@ -42,7 +44,7 @@ func GetSlices(LineName string, UserID string, PageNum int) (Res []SliceInfo, DB
 	if inGroup == false {
 		//User not in Group
 		//Can Only See Public
-		sqlCmd = `SELECT 'U'.'NickName', 'S'.'Content', 'S'.'Type', 'S'.'Visibility', 'S'.'Location', 'S'.'Time'
+		sqlCmd = `SELECT 'U'.'NickName', 'S'.'Gallery', 'S'.'Content', 'S'.'Type', 'S'.'Visibility', 'S'.'Location', 'S'.'Time'
 					FROM 'User' 'U', 'Slice' 'S', 'Line' 'L'
 					WHERE 'S'.'Visibility'="Public" AND 'L'.'Name'=? AND 'S'.'LineID'='L'.'ID' AND 'U'.'ID'='S'.'UserID'
 					ORDER BY 'S'.'Time' DESC LIMIT 0, 20`
@@ -52,13 +54,13 @@ func GetSlices(LineName string, UserID string, PageNum int) (Res []SliceInfo, DB
 	} else {
 		//User in Group
 		//Can See Public Protect and self Private
-		sqlCmd = `SELECT 'U'.'NickName', 'S'.'Content', 'S'.'Type', 'S'.'Visibility', 'S'.'Location', 'S'.'Time'
+		sqlCmd = `SELECT 'U'.'NickName', 'S'.'Gallery', 'S'.'Content', 'S'.'Type', 'S'.'Visibility', 'S'.'Location', 'S'.'Time'
 					FROM ('User' 'U' INNER JOIN 'Slice' 'S' ON 'U'.'ID'='S'.'UserID') INNER JOIN 'Line' 'L' ON 'S'.'LineID'='L'.'ID'
 					WHERE 'L'.'Name'=? AND ('S'.'Visibility' IN ("Public", "Protect") OR 'S'.'UserID'=?) 
 					ORDER BY 'S'.'Time' DESC LIMIT 0, 20`
 		sqlCmd = strings.Replace(sqlCmd, "'", "`", -1)
 		sqlCmd = strings.Replace(sqlCmd, `"`, `'`, -1)
-		rows, DBErr = course.Query(strings.Replace(sqlCmd, "'", "`", -1), LineName, UserID)
+		rows, DBErr = course.Query(sqlCmd, LineName, UserID)
 	}
 	defer rows.Close()
 	if DBErr != nil {
@@ -69,9 +71,13 @@ func GetSlices(LineName string, UserID string, PageNum int) (Res []SliceInfo, DB
 	for rows.Next() {
 		//var s SliceInfo
 		s := new(SliceInfo)
-		if err := rows.Scan(&(s.UserName), &(s.Content), &(s.Type), &(s.Visibility), &(s.Location), &(s.Time)); err != nil {
+		var gallery string
+		if err := rows.Scan(&(s.UserName), &gallery, &(s.Content), &(s.Type), &(s.Visibility), &(s.Location), &(s.Time)); err != nil {
 			log.Println(err.Error())
 			return nil, err
+		}
+		if gallery != "" {
+			s.Gallery = strings.Split(gallery, ",")
 		}
 		Res = append(Res, *s)
 	}
@@ -79,7 +85,7 @@ func GetSlices(LineName string, UserID string, PageNum int) (Res []SliceInfo, DB
 }
 
 //CreateSlice Create Slice
-func CreateSlice(LineName, UserID, Content, Gallery, Type, Visibility, Location, Time string) error {
+func CreateSlice(LineName, UserID string, Gallery []string, Content, Type, Visibility, Location, Time string) error {
 	course, selfCourse, DBErr := Begin(nil)
 	if DBErr != nil {
 		log.Println(DBErr.Error())
@@ -87,8 +93,24 @@ func CreateSlice(LineName, UserID, Content, Gallery, Type, Visibility, Location,
 	}
 	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
+	//Gallery into hash1,hahs2,...hashn, format
+	var galleryString string
+	imgNum := len(Gallery)
+	if imgNum > 0 {
+		//64*imgNum+imgNum
+		buff := bytes.NewBuffer(make([]byte, 65*imgNum))
+		buff.Reset()
+		for _, Hash := range Gallery {
+			buff.WriteString(Hash)
+			buff.Write([]byte(","))
+		}
+		galleryString = string(buff.Bytes()[0 : buff.Len()-2])
+	} else {
+		galleryString = ""
+	}
+
 	_, DBErr = course.Exec("INSERT INTO `Slice` (`UserID`,`LineID`,`Content`,`Gallery`,`Location`,`Type`,`Visibility`,`Time`) SELECT  ?, `Line`.`ID`, ?, ?, ?, ?, ?, ? FROM `Line` WHERE `Line`.`Name`=?",
-		UserID, Content, Gallery, Location, Type, Visibility, Time, LineName)
+		UserID, Content, galleryString, Location, Type, Visibility, Time, LineName)
 	if DBErr != nil {
 		switch {
 		//if create success, this will not Duplicate
