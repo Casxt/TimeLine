@@ -1,4 +1,5 @@
-<main role="main" class="container text-center mt-5 mb-5">
+<main role="main" class="container mt-5 mb-5 w-75">
+    <!--text-center-->
     <div class="card mt-3">
         <form id="AddSlice-Form" class="card-body cols container">
             <textarea class="form-control" id="Content" name="Content" rows="3"></textarea>
@@ -32,8 +33,15 @@
         </div>
     </div>
     <div class="card mt-3">
+        <div class="container card-img-top text-center" id="template">
+            <img class="rounded w-25" src="http://ima.forer.cn/shezhipeizhi-1.jpg" alt="Card image cap">
+        </div>
         <div class="card-body">
-            This is some text within a card body.
+            <h5 class="card-title">{Title}</h5>
+            <p class="card-text">{Content}</p>
+            <p class="card-text">
+                <small class="text-muted">{Time}</small>
+            </p>
         </div>
     </div>
 </main>
@@ -41,6 +49,12 @@
     TimeInput = document.getElementById('Time');
     latitudeInput = document.getElementById('Latitude');
     longitudeInput = document.getElementById('Longitude');
+
+    //Get Slice of line
+    function GetSlice(subPath) {
+        const re = /^https?:\/\/\S+?\/line\/([^/^\s]+)\/?/g;
+        const subPath = re.exec(window.location.href)[1];
+    }
     //Update Time and location
     function updateInfo() {
         const offset = new Date();

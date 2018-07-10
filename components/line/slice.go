@@ -2,17 +2,51 @@ package line
 
 import (
 	"bytes"
+	"log"
 	"net/http"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/tools"
 )
 
-/*
-func GetSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
+	type Data struct {
+		SessionID string
+		Operator  string
+		LineName  string
+		PageNum   int //1-n
+	}
+	type SlicesInfo struct {
+		State  string
+		Msg    string
+		Slices []database.SliceInfo
+	}
+	var data Data
+	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
+		return status, jsonRes
+	}
 
+	UserID, Session := tools.GetLoginStateOfOperator(req, data.SessionID, data.Operator)
+	if Session == nil {
+		//Do Nothing
+	}
+
+	Slices, err := database.GetSlices(data.LineName, UserID, data.PageNum)
+	if err != nil {
+		log.Println(err.Error())
+		return 500, map[string]string{
+			"State":  "Failde",
+			"Msg":    "GetSlices Database error",
+			"Detial": err.Error(),
+		}
+	}
+	return 200, SlicesInfo{
+		State:  "Failde",
+		Msg:    "User  not SignIn",
+		Slices: Slices,
+	}
 }
-*/
+
 //AddSlice is a Api interface
 //add slice to a line
 func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {

@@ -13,15 +13,8 @@ import (
 
 //Route 对api进行路由
 func Route(res http.ResponseWriter, req *http.Request) {
-
-	//解析get和post字串
-	//if err := req.ParseForm(); err != nil {
-	//	log.Println(err.Error())
-	//	return
-	//}
-	//api路由
 	subPath := req.URL.Path[5:] //url are like /api/(something)
-	var jsonRes map[string]string
+	var jsonRes interface{}     //map[string]string
 	var resCode int
 
 	switch {
@@ -35,6 +28,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = line.CreateLine(res, req)
 	case strings.HasPrefix(subPath, "AddSlice"):
 		resCode, jsonRes = line.AddSlice(res, req)
+	case strings.HasPrefix(subPath, "GetSlices"):
+		resCode, jsonRes = line.GetSlices(res, req)
 	default:
 		resCode = 200
 		jsonRes = map[string]string{
