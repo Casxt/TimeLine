@@ -56,7 +56,7 @@
     TimeInput = document.getElementById('Time');
     latitudeInput = document.getElementById('Latitude');
     longitudeInput = document.getElementById('Longitude');
-    const re = /^https?:\/\/\S+?\/line\/([^/^\s]+)\/?/g;
+    const re = /^https?:\/\/\S+?\/line\/([^/^#^\?^\s]+)/g;
     const LineName = re.exec(window.location.href)[1];
     const ImgTemplet = '<img class="rounded w-25 m-2" src="{src}">';
     const SliceList = document.getElementById("SliceList");
