@@ -17,6 +17,8 @@ import (
 
 func route(res http.ResponseWriter, req *http.Request) {
 	path := req.URL.Path
+
+	log.Println(req.RemoteAddr[0:strings.LastIndex(req.RemoteAddr, ":")], req.Method, path)
 	switch {
 	case strings.HasPrefix(strings.ToLower(path), "/api"):
 		api.Route(res, req)
