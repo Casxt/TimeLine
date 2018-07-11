@@ -26,6 +26,48 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	res.Write(result)
 }
 
+//GetLines Get Lines of User
+func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
+	type Data struct {
+		Operator  string
+		SessionID string
+	}
+	var data Data
+
+	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
+		return status, jsonRes
+	}
+
+	UserID, _ := tools.GetLoginStateOfOperator(req, data.SessionID, data.Operator)
+	if UserID == "" {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   `User Not Sign In`,
+		}
+	}
+
+	Lines, err := database.GetLines(UserID)
+	if err != nil {
+		return 500, map[string]string{
+			"State":  "Failde",
+			"Msg":    `database.GetUserLines Failed`,
+			"Detial": err.Error(),
+		}
+	}
+
+	type ResData struct {
+		State string
+		Msg   string
+		Lines []string
+	}
+
+	return 200, ResData{
+		State: "Success",
+		Msg:   "Lines Get Successful",
+		Lines: Lines,
+	}
+}
+
 //CreateLine will create a new line with specific name
 //TODO: Limit User num of Line
 func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {

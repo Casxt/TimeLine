@@ -70,7 +70,6 @@
             PageNum: 1
         }
         const Res = await JsonRequest('POST', '/api/GetSlices', Data);
-        console.log(Res);
 
         for (const slice of Res.Slices) {
             const Contents = slice.Content.split("\r\n");
@@ -95,10 +94,7 @@
             SliceList.innerHTML += SliceHtml;
         }
     }
-    window.onload = async () => {
-        GetSlice(LineName);
-    }
-
+    GetSlice(LineName);
     //Update Time and location
     async function updateInfo() {
         const offset = new Date();
