@@ -88,7 +88,7 @@ func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, ErrorMsg e
 	Hash256.Write([]byte(Salt + HashPass))
 	HashSaltPass := hex.EncodeToString(Hash256.Sum(nil))
 	sqlCmd := "INSERT INTO User (`Phone`,`Mail`,`NickName`,`Salt`,`SaltPass`) VALUES (?,?,?,?,?)"
-	_, DBErr = course.Exec(sqlCmd, Phone, Mail, "Unverify User", Salt, HashSaltPass)
+	_, DBErr = course.Exec(sqlCmd, Phone, Mail, "UnverifyUser", Salt, HashSaltPass)
 	if DBErr != nil {
 		switch {
 		case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):
