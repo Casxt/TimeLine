@@ -90,7 +90,14 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 		}
 	}
 
-	err := database.CreateLine(data.LineName, UserID)
+	if len(data.LineName) < 4 {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Line Name too short",
+		}
+	}
+
+	err := database.CreateLine(strings.ToLower(data.LineName), UserID)
 	if err != nil {
 		switch err.Error() {
 		case "Line Already Exist":

@@ -3,6 +3,7 @@ package line
 import (
 	"log"
 	"net/http"
+	"strings"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/tools"
@@ -11,10 +12,10 @@ import (
 //GetSlices GetSlices
 func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
 	type Data struct {
-		SessionID string `json:"SessionID"`
-		Operator  string `json:"Operator"`
-		LineName  string `json:"LineName"`
-		//PageNum   string `json:"PageNum"`
+		SessionID string
+		Operator  string
+		LineName  string
+		PageNum   int
 	}
 	type SlicesInfo struct {
 		State  string
@@ -30,8 +31,9 @@ func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes 
 	if Session == nil {
 		//Do Nothing
 	}
-	//PageNum, _ := strconv.Atoi(data.PageNum)
-	Slices, err := database.GetSlices(data.LineName, UserID, 1)
+	//TODO: Check PageNum
+	//TODO: Check LineName
+	Slices, err := database.GetSlices(strings.ToLower(data.LineName), UserID, 1)
 	if err != nil {
 		log.Println(err.Error())
 		return 500, map[string]string{
