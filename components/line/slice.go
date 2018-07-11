@@ -84,7 +84,7 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 
 	Location := data.Longitude + "," + data.Latitude
 	//TODO: Check How Many Slice User have create today
-	err := database.CreateSlice(data.LineName, UserID, data.Content, data.Gallery, data.Type, data.Visibility, Location, data.Time)
+	err := database.CreateSlice(data.LineName, UserID, data.Gallery, data.Content, data.Type, data.Visibility, Location, data.Time)
 	if err != nil {
 		return 200, map[string]string{
 			"State": "Success",

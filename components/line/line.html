@@ -1,4 +1,4 @@
-<main role="main" class="container mt-5 mb-5 w-75">
+<main role="main" class="container mt-5 mb-5 w-100">
     <!--text-center-->
     <div class="card mt-3">
         <form id="AddSlice-Form" class="card-body cols container">
@@ -32,42 +32,73 @@
 
         </div>
     </div>
-    <div class="card mt-3">
-        <div class="container card-img-top text-center" id="template">
-            <img class="rounded w-25" src="http://ima.forer.cn/shezhipeizhi-1.jpg" alt="Card image cap">
-        </div>
-        <div class="card-body">
-            <h5 class="card-title">{Title}</h5>
-            <p class="card-text">{Content}</p>
-            <p class="card-text">
-                <small class="text-muted">{Time}</small>
-            </p>
+
+    <div id="SliceList">
+
+    </div>
+    <div id="SliceTemplet" hidden>
+        <div class="card mt-3">
+            <div class="container card-img-top" id="template">
+                {Imgs}
+                <div class="card-body">
+                    <h4 class="card-title">{Title}</h4>
+                    <p class="card-text">{Content}</p>
+                    <p class="card-text">
+                        <small class="text-muted">{Name}</small>
+                        <small class="text-muted  float-right">{Time}</small>
+                    </p>
+                </div>
+            </div>
         </div>
     </div>
 </main>
 <script type="text/javascript">
-
     TimeInput = document.getElementById('Time');
     latitudeInput = document.getElementById('Latitude');
     longitudeInput = document.getElementById('Longitude');
     const re = /^https?:\/\/\S+?\/line\/([^/^\s]+)\/?/g;
     const LineName = re.exec(window.location.href)[1];
-    
+    const ImgTemplet = '<img class="rounded w-25 m-2" src="{src}">';
+    const SliceList = document.getElementById("SliceList");
+    const SliceTemplate = document.getElementById("SliceTemplet").innerHTML;
     //Get Slice of line
     async function GetSlice(LineName) {
         let Data = {
-            Operator : Cookies.Phone,
-            SessionID : Cookies.SessionID,
-            LineName : LineName,
-            PageNum : 1
+            Operator: Cookies.Phone,
+            SessionID: Cookies.SessionID,
+            LineName: LineName,
+            PageNum: 1
         }
-        const Slices = await JsonRequest('POST', '/api/GetSlices', Data);
-        console.log(Slices);
+        const Res = await JsonRequest('POST', '/api/GetSlices', Data);
+        console.log(Res);
+
+        for (const slice of Res.Slices) {
+            const Contents = slice.Content.split("\r\n");
+            let SliceHtml = SliceTemplate.replace("{Title}", Contents[0]);
+            let ImgHtml = "";
+            let Content = "";
+            if (Contents[1] != undefined) {
+                const length = Contents.length;
+                for (let index = 1; index < length; index++) {
+                    Content += Contents[index] + '<br>';
+                }
+            }
+            SliceHtml = SliceHtml.replace("{Content}", Content);
+            SliceHtml = SliceHtml.replace("{Name}", slice.UserName);
+            SliceHtml = SliceHtml.replace("{Time}", slice.Time.replace("T", " ").replace("Z", ""));
+            if (slice.Gallery != null) {
+                for (const img of slice.Gallery) {
+                    ImgHtml += ImgTemplet.replace("{src}", "/image/" + img);
+                }
+            }
+            SliceHtml = SliceHtml.replace("{Imgs}", ImgHtml);
+            SliceList.innerHTML += SliceHtml;
+        }
     }
-    window.onload = async ()=>{
+    window.onload = async () => {
         GetSlice(LineName);
     }
-   
+
     //Update Time and location
     async function updateInfo() {
         const offset = new Date();
@@ -131,6 +162,7 @@
         formData.delete("imgs");
         let Data = formData.ToArray();
         Data.Operator = Cookies.Phone;
+        Data.SessionID = Cookies.SessionID;
         Data.LineName = LineName;
         if (imgInput.files.length > 0) {
             Data.Gallery = Imgjson.Hashs;
