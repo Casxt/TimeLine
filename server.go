@@ -10,10 +10,8 @@ import (
 	"github.com/Casxt/TimeLine/components/line"
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
-	"github.com/Casxt/TimeLine/config"
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/page"
-	"github.com/Casxt/TimeLine/session"
 )
 
 func route(res http.ResponseWriter, req *http.Request) {
@@ -36,22 +34,6 @@ func route(res http.ResponseWriter, req *http.Request) {
 	default:
 		//line.Route(res, req)
 	}
-}
-
-func run() {
-	config.Load("config.json")
-	if err := database.Open(); err != nil {
-		log.Println("database Open filed")
-		return
-	}
-	defer database.Close()
-
-	session.Open()
-	mux := http.NewServeMux()
-	mux.Handle("/", http.HandlerFunc(route))
-
-	log.Println("Listening...")
-	http.ListenAndServe(":80", mux)
 }
 
 //SetUp will setup database table
