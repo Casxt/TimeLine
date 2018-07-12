@@ -4,6 +4,7 @@ import (
 	"database/sql"
 
 	//init database
+	"github.com/Casxt/TimeLine/config"
 	_ "github.com/go-sql-driver/mysql"
 )
 
@@ -12,8 +13,7 @@ var DataBase *sql.DB
 
 //Open using a sql.Open to open database
 func Open() error {
-	//此处小心，:= 赋值会建立一个叫DataBase的局部变量,并且在函数执行期间替换掉全局的DataBase
-	DataBase, _ = sql.Open("mysql", "TimeLine:TimeLineProject2018@tcp(sh2.casxt.com)/TimeLine?parseTime=true")
+	DataBase, _ = sql.Open("mysql", config.Sql.GenerateDSN())
 	DataBase.SetMaxOpenConns(100)
 	DataBase.SetMaxIdleConns(50)
 	err := DataBase.Ping()
