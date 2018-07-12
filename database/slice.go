@@ -104,7 +104,7 @@ func CreateSlice(LineName, UserID string, Gallery []string, Content, Type, Visib
 			buff.WriteString(Hash)
 			buff.Write([]byte(","))
 		}
-		galleryString = string(buff.Bytes()[0 : buff.Len()-2])
+		galleryString = string(buff.Bytes()[0 : buff.Len()-1])
 	} else {
 		galleryString = ""
 	}

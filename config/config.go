@@ -6,25 +6,18 @@ import (
 	"log"
 )
 
-//SqlConfig contain sql config
-type SqlConfig struct {
-	Host string
-	User string
-	Pass string
-	Port string
-	Base string
-}
-
 //ConfigStrut decide struct of config
 type ConfigStrut struct {
-	Sql SqlConfig
+	Sql         SqlConfig
+	ProjectPath string
 }
 
 var configStrut ConfigStrut
 
 //Sql contain sql config
 //Using in database
-var Sql *SqlConfig
+var Sql SqlConfig
+var ProjectPath string
 
 //Load Config file
 func Load(file string) {
@@ -37,5 +30,6 @@ func Load(file string) {
 	if err != nil {
 		panic(err)
 	}
-	Sql = &configStrut.Sql
+	Sql = configStrut.Sql
+	ProjectPath = configStrut.ProjectPath
 }
