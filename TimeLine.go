@@ -11,12 +11,15 @@ import (
 
 func main() {
 	config.Load("config.json")
+
+	log.Println("Connect Database...")
 	if err := database.Open(); err != nil {
 		log.Println("database Open filed")
 		return
 	}
 	defer database.Close()
 
+	log.Println("Start Session server...")
 	session.Open()
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(route))
