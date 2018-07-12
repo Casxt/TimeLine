@@ -31,7 +31,13 @@ func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes 
 	if Session == nil {
 		//Do Nothing
 	}
-	//TODO: Check PageNum
+	//Check PageNum
+	if data.PageNum < 1 {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "invalid PageNum",
+		}
+	}
 	//TODO: Check LineName
 	Slices, err := database.GetSlices(strings.ToLower(data.LineName), UserID, 1)
 	if err != nil {

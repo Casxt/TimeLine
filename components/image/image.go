@@ -82,7 +82,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			State: "Failde",
 			Msg:   "User Not SignIn",
 		})
-		return 400, []byte("byteRes")
+		return 400, byteRes
 	}
 
 	PostReader, err := req.MultipartReader()

@@ -1,7 +1,7 @@
 
 /**
  * Cookies Addons
- * TODO: split(/;\s?/) should have change and not test in Edge and IOS
+ * TODO: split("; ") should have change and not test in Edge and IOS
  * Work with Edge
  */
 Object.defineProperty(window, "Cookies", {

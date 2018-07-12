@@ -58,7 +58,7 @@
     longitudeInput = document.getElementById('Longitude');
     const re = /^https?:\/\/\S+?\/line\/([^/^#^\?^\s]+)/g;
     const LineName = re.exec(window.location.href)[1];
-    const ImgTemplet = '<img class="rounded w-25 m-2" src="{src}">';
+    const ImgTemplet = '<canvas id="{imgHash}" class="rounded w-25 m-2" src=""></canvas>';
     const SliceList = document.getElementById("SliceList");
     const SliceTemplate = document.getElementById("SliceTemplet").innerHTML;
     //Get Slice of line
@@ -86,12 +86,28 @@
             SliceHtml = SliceHtml.replace("{Name}", slice.UserName);
             SliceHtml = SliceHtml.replace("{Time}", slice.Time.replace("T", " ").replace("Z", ""));
             if (slice.Gallery != null) {
-                for (const img of slice.Gallery) {
-                    ImgHtml += ImgTemplet.replace("{src}", "/image/" + img);
+                for (const imgHash of slice.Gallery) {
+                    let img = new Image(); //document.createElement('img');
+                    img.onload = function () {
+                        const y = Math.round(img.height / 2);
+                        const x = Math.round(img.width / 2);
+                        let d = 0;
+                        if (img.height > img.width) {
+                            d = Math.round(img.width / 2);
+                        } else {
+                            d = Math.round(img.height / 2);
+                        }
+                        let canvas = document.getElementById(imgHash);
+                        let ctx = canvas.getContext("2d");
+                        ctx.drawImage(this, y - d, x - d, 2 * d, 2 * d, 0, 0, 2 * d, 2 * d);
+                    }
+                    img.src = "/image/" + imgHash;
+                    ImgHtml += ImgTemplet.replace("{imgHash}", imgHash);
                 }
             }
             SliceHtml = SliceHtml.replace("{Imgs}", ImgHtml);
             SliceList.innerHTML += SliceHtml;
+
         }
     }
     GetSlice(LineName);

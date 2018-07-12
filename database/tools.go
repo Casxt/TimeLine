@@ -2,6 +2,7 @@ package database
 
 import (
 	"database/sql"
+	"time"
 
 	//init database
 	"github.com/Casxt/TimeLine/config"
@@ -14,6 +15,7 @@ var DataBase *sql.DB
 //Open using a sql.Open to open database
 func Open() error {
 	DataBase, _ = sql.Open("mysql", config.Sql.GenerateDSN())
+	DataBase.SetConnMaxLifetime(time.Second * 60)
 	DataBase.SetMaxOpenConns(100)
 	DataBase.SetMaxIdleConns(50)
 	err := DataBase.Ping()

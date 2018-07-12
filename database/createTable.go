@@ -81,6 +81,7 @@ func CreateGroupTable(course *sql.Tx) (err error) {
 }
 
 //CreateImageTable Create image Table, image recoder the image
+//TODO: to recoder img size
 func CreateImageTable(course *sql.Tx) (err error) {
 	course, selfCourse, err := Begin(course)
 	if err != nil {
