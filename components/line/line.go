@@ -5,11 +5,11 @@ import (
 	"strings"
 
 	"github.com/Casxt/TimeLine/database"
-	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/static"
 	"github.com/Casxt/TimeLine/tools"
 )
 
-//Route decide page
+//Route decide static
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
@@ -18,9 +18,9 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	switch {
 	//match /linecreate*
 	case strings.HasPrefix(strings.ToLower(subPath), "create"):
-		status, result, _ = page.GetPage("components", "line", "createLine.html")
+		status, result, _ = static.GetPage("components", "line", "createLine.html")
 	default:
-		status, result, _ = page.GetPage("components", "line", "line.html")
+		status, result, _ = static.GetPage("components", "line", "line.html")
 	}
 	res.WriteHeader(status)
 	res.Write(result)

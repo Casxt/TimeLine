@@ -14,12 +14,11 @@ import (
 	"regexp"
 
 	"github.com/Casxt/TimeLine/database"
+	"github.com/Casxt/TimeLine/static"
 	"github.com/Casxt/TimeLine/tools"
-
-	"github.com/Casxt/TimeLine/page"
 )
 
-//Route decide page
+//Route decide static
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
@@ -31,7 +30,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	case regexp.MustCompile("^/[a-z0-9]{64}/?$").MatchString(subPath):
 		status, result = GetImage(res, req)
 	default:
-		status, result, _ = page.GetPage("components", "image", "line.html")
+		status, result, _ = static.GetPage("components", "image", "line.html")
 	}
 	res.WriteHeader(status)
 	res.Write(result)
@@ -58,7 +57,7 @@ func GetImage(res http.ResponseWriter, req *http.Request) (status int, byteRes [
 		})
 		return 400, resByte
 	}
-	status, byteRes, _ = page.GetFile("static", "image", imgName+".jpg")
+	status, byteRes, _ = static.GetFile("static", "image", imgName+".jpg")
 	return status, byteRes
 }
 
@@ -201,7 +200,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 	//after all img pass check, can they be storge
 	for i := 0; i < imgNum; i++ {
 		//storge img
-		if err = page.SaveFile(Imglist[i], "static", "image", Hashlist[i]+".jpg"); err != nil {
+		if err = static.SaveFile(Imglist[i], "static", "image", Hashlist[i]+".jpg"); err != nil {
 			byteRes, _ = json.Marshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   err.Error(),

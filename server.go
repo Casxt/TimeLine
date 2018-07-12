@@ -11,7 +11,7 @@ import (
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
-	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/static"
 )
 
 func route(res http.ResponseWriter, req *http.Request) {
@@ -26,7 +26,7 @@ func route(res http.ResponseWriter, req *http.Request) {
 	case strings.HasPrefix(strings.ToLower(path), "/signup"):
 		signup.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/static"):
-		page.Route(res, req)
+		static.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/image"):
 		image.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/line"):

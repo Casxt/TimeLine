@@ -10,12 +10,12 @@ import (
 	"regexp"
 
 	"github.com/Casxt/TimeLine/database"
-	"github.com/Casxt/TimeLine/page"
 	"github.com/Casxt/TimeLine/session"
+	"github.com/Casxt/TimeLine/static"
 	"github.com/Casxt/TimeLine/tools"
 )
 
-//Route Return The Page to Show
+//Route Return The static to Show
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
@@ -23,9 +23,9 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	//subPath := req.URL.Path[len("/signin"):]
 	switch {
 	//case strings.HasPrefix(strings.ToLower(subPath), "signin.js"):
-	//	result, status, _ = page.GetFile("components", "signin", "signup.js")
+	//	result, status, _ = static.GetFile("components", "signin", "signup.js")
 	default:
-		status, result, _ = page.GetPage("components", "signin", "signin.html")
+		status, result, _ = static.GetPage("components", "signin", "signin.html")
 
 	}
 	res.WriteHeader(status)

@@ -1,4 +1,4 @@
-package page
+package static
 
 import (
 	"net/http"

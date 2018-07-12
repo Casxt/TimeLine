@@ -5,11 +5,11 @@ import (
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/mail"
-	"github.com/Casxt/TimeLine/page"
+	"github.com/Casxt/TimeLine/static"
 	"github.com/Casxt/TimeLine/tools"
 )
 
-//Route decide return which Page
+//Route decide return which static
 func Route(res http.ResponseWriter, req *http.Request) {
 	var result []byte
 	var status int
@@ -18,10 +18,10 @@ func Route(res http.ResponseWriter, req *http.Request) {
 
 	switch {
 	//case strings.HasSuffix(strings.ToLower(subPath), "signup.js"):
-	//	result, status, _ = page.GetFile("components", "signup", "signup.js")
+	//	result, status, _ = static.GetFile("components", "signup", "signup.js")
 	//	res.Header().Add("Content-Type", "application/x-javascript")
 	default:
-		status, result, _ = page.GetPage("components", "signup", "signup.html")
+		status, result, _ = static.GetPage("components", "signup", "signup.html")
 
 	}
 	res.WriteHeader(status)

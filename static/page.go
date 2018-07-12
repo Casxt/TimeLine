@@ -1,4 +1,4 @@
-package page
+package static
 
 import (
 	"bytes"
