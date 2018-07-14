@@ -104,11 +104,10 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		rawBuff.Reset()
 		part, err := PostReader.NextPart()
 
-		switch err {
-		case io.EOF:
+		if err == io.EOF {
 			break
-		case nil:
-		default:
+		}
+		if err != nil {
 			log.Println(err.Error())
 			return 400, tools.JsonMarshal(ImgUploadRes{
 				State: "Failde",
