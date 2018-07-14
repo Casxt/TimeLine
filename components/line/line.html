@@ -36,10 +36,19 @@
     <div id="SliceList">
 
     </div>
+    <!--Img Modal-->
+    <div class="modal" tabindex="-1" id="ImgModal">
+        <div class="modal-dialog container">
+            <img id="ImgModal-img" src="" class="rounded w-100 m-2 d-block">
+        </div>
+    </div>
+
     <div id="SliceTemplet" hidden>
         <div class="card mt-3">
             <div class="container card-img-top" id="template">
-                {Imgs}
+                <div class="text-center">
+                    {Imgs}
+                </div>
                 <div class="card-body">
                     <h4 class="card-title">{Title}</h4>
                     <p class="card-text">{Content}</p>
@@ -59,7 +68,7 @@
     const re = /^https?:\/\/\S+?\/line\/([^/^#^\?^\s]+)/g;
     const LineName = re.exec(window.location.href)[1];
     const ImgTemplet =
-        '<canvas id="{imgID}" imgHash="{imgHash}" class="rounded m-2 w-25"> </canvas> '; // class="rounded m-1 w-25"
+        '<canvas id="{imgID}" class="rounded m-2 w-25" onclick=\'document.getElementById("ImgModal-img").src=this.img.src;\' data-toggle="modal" data-target="#ImgModal""></canvas> ';
     const SliceList = document.getElementById("SliceList");
     const SliceTemplate = document.getElementById("SliceTemplet").innerHTML;
     //Get Slice of line
@@ -72,6 +81,7 @@
         }
         const Res = await JsonRequest('POST', '/api/GetSlices', Data);
 
+        let count = 0;
         for (const slice of Res.Slices) {
             const Contents = slice.Content.split("\r\n");
             let SliceHtml = SliceTemplate.replace("{Title}", Contents[0]);
@@ -86,26 +96,21 @@
             SliceHtml = SliceHtml.replace("{Content}", Content);
             SliceHtml = SliceHtml.replace("{Name}", slice.UserName);
             SliceHtml = SliceHtml.replace("{Time}", slice.Time.replace("T", " ").replace("Z", ""));
-            let count = 0;
             if (slice.Gallery != null) {
                 for (const imgHash of slice.Gallery) {
-                    let img = new Image(); //document.createElement('img');
+                    let img = new Image();
                     const ImgID = "Img-" + count;
                     img.onload = function () {
                         const y = this.height / 2;
                         const x = this.width / 2;
-                        let d = 0;
-                        if (this.height > this.width) {
-                            d = this.width / 2;
-                        } else {
-                            d = this.height / 2;
-                        }
-                        console.log(x, y, d);
+                        const d = y > x ? x : y;
                         let canvas = document.getElementById(ImgID);
                         canvas.height = canvas.width;
-                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, canvas.height, canvas.height);
+                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, canvas.height,
+                            canvas.height);
+                        canvas.img = this;
                     }
-                    ImgHtml += ImgTemplet.replace("{imgHash}", imgHash).replace("{imgID}", ImgID);
+                    ImgHtml += ImgTemplet.replace("{imgID}", ImgID);
                     img.src = "/image/" + imgHash;
                     count++;
                 }
