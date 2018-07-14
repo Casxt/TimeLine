@@ -65,3 +65,12 @@ func GetLoginStateOfCookie(req *http.Request) (UserID string, Session session.IO
 	}
 	return ID, s
 }
+
+//JsonMarshal Marshal static struct and panic if err
+func JsonMarshal(v interface{}) (byteRes []byte) {
+	var err error
+	if byteRes, err = json.Marshal(v); err != nil {
+		panic(err)
+	}
+	return byteRes
+}
