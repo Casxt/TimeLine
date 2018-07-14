@@ -1,6 +1,7 @@
 package line
 
 import (
+	"log"
 	"net/http"
 	"strings"
 
@@ -48,6 +49,7 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 
 	Lines, err := database.GetLines(UserID)
 	if err != nil {
+		log.Println(err.Error())
 		return 500, map[string]string{
 			"State":  "Failde",
 			"Msg":    `database.GetUserLines Failed`,
@@ -69,7 +71,6 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 }
 
 //CreateLine will create a new line with specific name
-//TODO: Limit User num of Line
 func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	type Data struct {
 		Operator  string
@@ -89,7 +90,7 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 			"Msg":   `User Not Sign In`,
 		}
 	}
-
+	//Limit Line num of User
 	if len(data.LineName) < 4 {
 		return 400, map[string]string{
 			"State": "Failde",
@@ -97,7 +98,24 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 		}
 	}
 
-	err := database.CreateLine(strings.ToLower(data.LineName), UserID)
+	Lines, err := database.GetLines(UserID)
+	if err != nil {
+		log.Println(err.Error())
+		return 400, map[string]string{
+			"State":  "Failde",
+			"Msg":    "Unknow Error Happend",
+			"Detail": err.Error(),
+		}
+	}
+
+	if len(Lines) > 3 {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "User Have too Much Lines",
+		}
+	}
+
+	err = database.CreateLine(strings.ToLower(data.LineName), UserID)
 	if err != nil {
 		switch err.Error() {
 		case "Line Already Exist":
