@@ -82,12 +82,24 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 	if Session == nil {
 		return 400, map[string]string{
 			"State": "Failde",
-			"Msg":   "User  not SignIn",
+			"Msg":   "User not SignIn",
 		}
 	}
 
 	//TODO: Check Type
-	//TODO: Check Gallery
+
+	//Check Gallery
+	for _, imgHash := range data.Gallery {
+		if !tools.CheckImgHash(imgHash) {
+			return 400, map[string]string{
+				"State": "Failde",
+				"Msg":   "Invalid Image Hash",
+			}
+		}
+	}
+
+	//TODO: Check imgHash exist
+
 	//TODO: Check Content Visibility Longitude Latitude LineName
 
 	Location := data.Longitude + "," + data.Latitude

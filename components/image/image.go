@@ -11,7 +11,6 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"regexp"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/static"
@@ -27,7 +26,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	case req.Method == "POST":
 		status, result = UploadImage(res, req)
 		//match /image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
-	case regexp.MustCompile("^/[a-z0-9]{64}/?$").MatchString(subPath):
+	case tools.CheckImgHash(subPath):
 		status, result = GetImage(res, req)
 	default:
 		status, result, _ = static.GetPage("components", "image", "line.html")
