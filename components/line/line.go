@@ -43,7 +43,7 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 	if UserID == "" {
 		return 400, map[string]string{
 			"State": "Failde",
-			"Msg":   `User Not Sign In`,
+			"Msg":   "User Not Sign In",
 		}
 	}
 
@@ -52,7 +52,7 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 		log.Println(err.Error())
 		return 500, map[string]string{
 			"State":  "Failde",
-			"Msg":    `database.GetUserLines Failed`,
+			"Msg":    "database.GetUserLines Failed",
 			"Detial": err.Error(),
 		}
 	}

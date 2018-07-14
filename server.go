@@ -8,6 +8,7 @@ import (
 	"github.com/Casxt/TimeLine/api"
 	"github.com/Casxt/TimeLine/components/image"
 	"github.com/Casxt/TimeLine/components/line"
+	"github.com/Casxt/TimeLine/components/profile"
 	"github.com/Casxt/TimeLine/components/signin"
 	"github.com/Casxt/TimeLine/components/signup"
 	"github.com/Casxt/TimeLine/database"
@@ -31,6 +32,8 @@ func route(res http.ResponseWriter, req *http.Request) {
 		image.Route(res, req)
 	case strings.HasPrefix(strings.ToLower(path), "/line"):
 		line.Route(res, req)
+	case strings.HasPrefix(strings.ToLower(path), "/profile"):
+		profile.Route(res, req)
 	default:
 		//line.Route(res, req)
 	}
