@@ -90,7 +90,7 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 			"Msg":   `User Not Sign In`,
 		}
 	}
-	//Limit Line num of User
+
 	if len(data.LineName) < 4 {
 		return 400, map[string]string{
 			"State": "Failde",
@@ -108,6 +108,7 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 		}
 	}
 
+	//Limit Line num of User
 	if len(Lines) > 3 {
 		return 400, map[string]string{
 			"State": "Failde",
