@@ -35,7 +35,7 @@ func route(res http.ResponseWriter, req *http.Request) {
 	case strings.HasPrefix(strings.ToLower(path), "/profile"):
 		profile.Route(res, req)
 	default:
-		//line.Route(res, req)
+		res.Write([]byte("TimeLine!"))
 	}
 }
 

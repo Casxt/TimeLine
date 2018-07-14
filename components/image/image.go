@@ -109,7 +109,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		}
 		if err != nil {
 			log.Println(err.Error())
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "File too small",
 			})
@@ -120,7 +120,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		}
 
 		if imgNum >= 9 {
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "Too many img",
 			})
@@ -130,13 +130,13 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		//DetectContentType need first 512 byte,
 		//in order to be safe, keep file large more than 512 bytes
 		if rawSize < 512 {
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "File too small",
 			})
 		}
 		if MaxSize -= rawSize; MaxSize < 0 {
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "File too big",
 			})
@@ -144,7 +144,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 
 		if err != nil && err != io.EOF {
 			log.Println(err.Error())
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "Unknow Error",
 			})
@@ -158,7 +158,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			img, err = jpeg.Decode(bytes.NewReader(rawBytes))
 			if err != nil {
 				log.Println(err.Error())
-				return 400, tools.JsonMarshal(ImgUploadRes{
+				return 400, tools.JSONMarshal(ImgUploadRes{
 					State: "Failde",
 					Msg:   "invalid jpeg file",
 				})
@@ -167,13 +167,13 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 			img, err = png.Decode(bytes.NewReader(rawBytes))
 			if err != nil {
 				log.Println(err.Error())
-				return 400, tools.JsonMarshal(ImgUploadRes{
+				return 400, tools.JSONMarshal(ImgUploadRes{
 					State: "Failde",
 					Msg:   "invalid jpeg file",
 				})
 			}
 		default:
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "Unsupprot Format",
 			})
@@ -200,7 +200,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 		//storge img
 		if err = static.SaveFile(Imglist[i], "static", "image", Hashlist[i]+".jpg"); err != nil {
 			log.Println(err.Error())
-			return 400, tools.JsonMarshal(ImgUploadRes{
+			return 400, tools.JSONMarshal(ImgUploadRes{
 				State: "Failde",
 				Msg:   "File Storge Failed",
 			})
