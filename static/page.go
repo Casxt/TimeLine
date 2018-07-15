@@ -50,7 +50,7 @@ func GetPage(names ...string) (status int, Page []byte, err error) {
 		return 404, buf.Bytes(), err
 	}
 
-	return 404, buf.Bytes(), err
+	return 200, buf.Bytes(), err
 }
 
 //GetFile Get static file
