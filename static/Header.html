@@ -8,12 +8,9 @@
   <meta name="author" content="">
   <!-- <link rel="icon" href="../../../../favicon.ico"> -->
   <script src="/static/js/TimeLine.js"></script>
-  <title>Starter Template for Bootstrap</title>
-
+  <title>Time Line</title>
   <!-- Bootstrap core CSS -->
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.0/css/bootstrap.min.css" integrity="sha384-9gVQ4dYFwwWSjIDZnLEWnxCjeSWFphJiwGPXr1jddIhOegiu1FwO5qRGvFXOdJZ4"
-    crossorigin="anonymous">
-
+  <link rel="stylesheet" href="/static/css/bootstrap.min.css" crossorigin="anonymous" type="text/css">
 </head>
 
 <body>
@@ -46,7 +43,7 @@
     document.getElementById("Navbar-UserName").innerHTML = Cookies.NickName;
     async function LoadLines() {
       const List = document.getElementById("Navbar-LineList");
-      if (List.load){
+      if (List.load) {
         return;
       }
       let Data = {
@@ -63,6 +60,6 @@
         });
       }
       List.innerHTML = listHtml;
-      List.load=true;
+      List.load = true;
     }
   </script>
