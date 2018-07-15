@@ -92,6 +92,8 @@ func CreateImageTable(course *sql.Tx) (err error) {
 		'ID'  int NOT NULL AUTO_INCREMENT ,
 		'Hash' char(64) CHARACTER SET utf8 NOT NULL,
 		'UserID'  int NOT NULL,
+		'Visibility'  enum("Private","Public","Protect") DEFAULT "Protect",
+		'Size'  int NOT NULL,
 		'Time'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
 		FOREIGN KEY ('UserID') REFERENCES 'User' ('ID'),
 		INDEX ('UserID'),

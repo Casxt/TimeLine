@@ -46,6 +46,7 @@ func GetImage(res http.ResponseWriter, req *http.Request) (status int, byteRes [
 		})
 		return 400, resByte
 	}
+
 	//imgName = 8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
 	imgName := req.URL.Path[len("/image/") : len("/image/")+64]
 	_, err := database.CheckImgInfo(imgName, UserID)
@@ -98,6 +99,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 	rawBuff := bytes.NewBuffer(make([]byte, MaxSize))
 	Hashlist := make([]string, 9)
 	Imglist := make([][]byte, 9)
+	SizeList := make([]int, 9)
 	imgNum := 0
 	for {
 		rawBuff.Reset()
@@ -189,10 +191,11 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 
 		Imglist[imgNum] = JpgBytes
 		Hashlist[imgNum] = ImgHash
+		SizeList[imgNum] = len(JpgBytes)
 		imgNum++
 	}
 
-	database.CreateImage(UserID, Hashlist[0:imgNum])
+	database.CreateImage(UserID, Hashlist[0:imgNum], SizeList[0:imgNum])
 
 	//after all img pass check, can they be storge
 	for i := 0; i < imgNum; i++ {

@@ -30,7 +30,7 @@ func CheckImgInfo(Hash, UserID string) (Time time.Time, err error) {
 }
 
 //CreateImage will mark a group of img one by one belong to a user
-func CreateImage(UserID string, ImageHashs []string) error {
+func CreateImage(UserID string, ImageHash []string, ImageSize []int) error {
 	course, selfCourse, DBErr := Begin(nil)
 	if DBErr != nil {
 		log.Println("CreateImage:", DBErr.Error())
@@ -38,14 +38,14 @@ func CreateImage(UserID string, ImageHashs []string) error {
 	}
 	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
-	stmt, err := course.Prepare("INSERT INTO Image (`Hash`,`UserID`) VALUES (?,?)")
+	stmt, err := course.Prepare("INSERT INTO Image (`Hash`,`UserID`,`Visibility`,`Size`) VALUES (?,?,?,?)")
 	if err != nil {
 		log.Println("CreateImage:", DBErr.Error())
 		return err
 	}
 
-	for _, hash := range ImageHashs {
-		_, DBErr = stmt.Exec(hash, UserID)
+	for index, hash := range ImageHash {
+		_, DBErr = stmt.Exec(hash, UserID, "Protect", ImageSize[index])
 		if DBErr != nil {
 			switch {
 			case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):

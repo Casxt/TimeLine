@@ -13,7 +13,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	subPath := req.URL.Path[8:] //url are like /static/(something)
 	switch {
 	case strings.HasPrefix(strings.ToLower(subPath), "js"): // /(js/...)
-		//there use path that prefix with static
+		status, result, _ = GetFile(strings.Split(req.URL.Path, "/")...)
+	case strings.HasPrefix(strings.ToLower(subPath), "css"): // /(js/...)
 		status, result, _ = GetFile(strings.Split(req.URL.Path, "/")...)
 	}
 	res.WriteHeader(status)

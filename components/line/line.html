@@ -101,8 +101,8 @@
                     let img = new Image();
                     const ImgID = "Img-" + count;
                     img.onload = function () {
-                        const y = this.height / 2;
-                        const x = this.width / 2;
+                        const y = Math.round(this.height / 2);
+                        const x = Math.round(this.width / 2);
                         const d = y > x ? x : y;
                         let canvas = document.getElementById(ImgID);
                         canvas.height = canvas.width;
