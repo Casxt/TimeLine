@@ -19,6 +19,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		status, result, _ = GetFile(splitPath...)
 	case strings.HasPrefix(strings.ToLower(subPath), "/css"):
 		status, result, _ = GetFile(splitPath...)
+	case strings.HasPrefix(strings.ToLower(subPath), "/image"):
+		status, result, _ = GetFile(splitPath...)
 	}
 	res.Header().Set("Content-Type", mime.TypeByExtension(path.Ext(splitPath[len(splitPath)-1])))
 	res.WriteHeader(status)

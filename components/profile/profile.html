@@ -1,9 +1,11 @@
-<link rel="stylesheet" href="/static/css/croppie.min.css" crossorigin="anonymous" type="text/css">
+<link rel="stylesheet" href="/static/css/croppie.min.css" type="text/css">
+<script src="/static/js/croppie.min.js"></script>
 <main class="container">
     <div class="row m-5">
         <div class="col-sm-4">
             <div class="card">
-                <img class="card-img-top" src="" alt="Card image cap">
+                <img class="card-img-top" src="/static/image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c.jpg" data-toggle="modal"
+                    data-target="#PPU-Modal">
                 <div class="card-body">
                     <h5 class="card-title">NickName</h5>
                     <p class="card-text">Phone</p>
@@ -44,7 +46,7 @@
                     </div>
                 </div>
                 <div class="card">
-                    <img class="card-img-top" src=".../100px180/" alt="Card image cap">
+                    <img class="card-img-top" src="/static/image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c.jpg">
                     <div class="card-body">
                         <h5 class="card-title">Card title</h5>
                     </div>
@@ -82,7 +84,80 @@
 
         </div>
     </div>
+
+    <!--Profile Picture Upload Modal -->
+    <div class="modal fade" id="PPU-Modal" tabindex="-1" role="dialog" aria-labelledby="PPU-Modal" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Change Profile Picture</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body container">
+                    <div id="PPU-Crop" class="center-block"></div>
+                </div>
+                <div class="modal-footer">
+                    <div class="custom-file">
+                        <input type="file" class="custom-file-input" onchange="readFile(this)">
+                        <label class="custom-file-label" for="customFile">Choose New Picture</label>
+                    </div>
+                    <button type="button" class="btn btn-primary" onclick="newProfilePicture(this)">Save changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 <script type="text/javascript">
-//TODO: Get profile info
+    let c = new Croppie(document.getElementById('PPU-Crop'), {
+        viewport: {
+            width: 190,
+            height: 190
+        },
+        boundary: {
+            width: 250,
+            height: 250
+        },
+        enableOrientation: true,
+    });
+
+    function readFile(input) {
+        if (input.files && input.files[0]) {
+            //console.log(input.files[0]);
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                c.bind({
+                    url: e.target.result,
+                });
+            }
+            reader.readAsDataURL(input.files[0]);
+        } else {
+            swal("Sorry - you're browser doesn't support the FileReader API");
+        }
+    }
+
+    async function newProfilePicture(button) {
+        console.log(Object.prototype.toString.call(button));
+        const B = new AnimeButton(button);
+        const Closer = B.OnLoding("disabled", "Submitting...");
+
+        const profilePicture = await c.result('blob', {
+            width: 256,
+            height: 256
+        }, 'jpeg', 1, false)
+
+        let imgs = new FormData()
+        imgs.append('images', profilePicture);
+        Imgjson = await FileRequest('POST', '/image', imgs);
+
+        Closer();
+        if (Imgjson.State == "Success") {
+            B.Alert("btn btn-primary", Imgjson.Msg, 1000);
+        } else {
+            B.Alert("btn-warning btn", Imgjson.Msg, 3000);
+            return;
+        }
+
+    }
 </script>
