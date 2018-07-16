@@ -101,3 +101,26 @@ func CreateUser(Phone, Mail, HashPass string) (NickName, Pass string, ErrorMsg e
 
 	return "Unverify User", Pass, nil
 }
+
+//UpdateProfilePic Update ProfilePicture
+//Metion this func will set img Visibility to Public
+func UpdateProfilePic(UserID, ImgHash string) (ErrorMsg error) {
+	course, selfCourse, DBErr := Begin(nil)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return errors.New("DataBase Connection Error")
+	}
+	defer GraceCommit(course, selfCourse, DBErr)
+
+	//set img Visibility to Public
+	UpdateImgVisibility(UserID, ImgHash, "Public", course)
+
+	sqlCmd := "Update `User` SET `ProfilePic`=? WHERE `ID`=?"
+	_, DBErr = course.Exec(sqlCmd, ImgHash, UserID)
+	if DBErr != nil {
+		log.Println("UpdateProfilePic:", DBErr.Error())
+		return DBErr
+	}
+
+	return nil
+}

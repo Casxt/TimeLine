@@ -142,21 +142,38 @@
         const B = new AnimeButton(button);
         const Closer = B.OnLoding("disabled", "Submitting...");
 
-        const profilePicture = await c.result('blob', {
-            width: 256,
-            height: 256
-        }, 'jpeg', 1, false)
+        const profilePicture = await c.result({
+            type: 'blob',
+            format: 'jpeg',
+            quality: 1,
+            size: 'original'
+        });
 
         let imgs = new FormData()
         imgs.append('images', profilePicture);
         Imgjson = await FileRequest('POST', '/image', imgs);
-
-        Closer();
+        //Imgjson.Hashs[0];
+        //Closer();
         if (Imgjson.State == "Success") {
-            B.Alert("btn btn-primary", Imgjson.Msg, 1000);
+            //B.Alert("btn btn-primary", Imgjson.Msg, 1000);
         } else {
+            Closer();
             B.Alert("btn-warning btn", Imgjson.Msg, 3000);
             return;
+        }
+
+        const formData = new FormData();
+        let Data = formData.ToArray();
+        Data.Operator = Cookies.Phone;
+        Data.SessionID = Cookies.SessionID;
+        Data.Picture = Imgjson.Hashs[0];
+        const ResJson = await JsonRequest('POST', '/api/ProfilePicture', Data);
+        if (ResJson.State == "Success") {
+            Closer();
+            B.Alert("btn btn-primary", ResJson.Msg, 1000);
+        } else {
+            Closer();
+            B.Alert("btn-warning btn ml-1 mt-2", ResJson.Msg, 3000);
         }
 
     }

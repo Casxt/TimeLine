@@ -11,6 +11,7 @@ import (
 	"io"
 	"log"
 	"net/http"
+	"regexp"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/static"
@@ -26,7 +27,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	case req.Method == "POST":
 		status, result = UploadImage(res, req)
 		//match /image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
-	case tools.CheckImgHash(subPath):
+	case regexp.MustCompile("^[a-z0-9]{64}/?$").MatchString(subPath):
 		status, result = GetImage(res, req)
 	default:
 		status, result, _ = static.GetPage("components", "image", "line.html")
@@ -49,7 +50,7 @@ func GetImage(res http.ResponseWriter, req *http.Request) (status int, byteRes [
 
 	//imgName = 8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
 	imgName := req.URL.Path[len("/image/") : len("/image/")+64]
-	_, err := database.CheckImgInfo(imgName, UserID)
+	_, _, _, _, err := database.GetImgInfo(imgName, UserID)
 	if err != nil {
 		resByte, _ := json.Marshal(map[string]string{
 			"State": "Failde",
@@ -99,7 +100,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 	rawBuff := bytes.NewBuffer(make([]byte, MaxSize))
 	Hashlist := make([]string, 9)
 	Imglist := make([][]byte, 9)
-	SizeList := make([]int, 9)
+	ImgInfoList := make([]database.ImgInfo, 9)
 	imgNum := 0
 	for {
 		rawBuff.Reset()
@@ -182,7 +183,7 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 
 		rawBuff.Reset()
 		jpeg.Encode(rawBuff, img, &jpeg.Options{Quality: 80})
-		//Check img dumplicate
+		//TODO:Check img dumplicate
 		JpgBytes := make([]byte, rawBuff.Len())
 		rawBuff.Read(JpgBytes)
 		Hash256 := sha256.New()
@@ -191,11 +192,14 @@ func UploadImage(res http.ResponseWriter, req *http.Request) (status int, byteRe
 
 		Imglist[imgNum] = JpgBytes
 		Hashlist[imgNum] = ImgHash
-		SizeList[imgNum] = len(JpgBytes)
+		ImgInfoList[imgNum].Hash = ImgHash
+		ImgInfoList[imgNum].Size = len(JpgBytes)
+		ImgInfoList[imgNum].Height = img.Bounds().Max.Y
+		ImgInfoList[imgNum].Width = img.Bounds().Max.X
 		imgNum++
 	}
 
-	database.CreateImage(UserID, Hashlist[0:imgNum], SizeList[0:imgNum])
+	database.CreateImage(UserID, ImgInfoList[0:imgNum])
 
 	//after all img pass check, can they be storge
 	for i := 0; i < imgNum; i++ {
