@@ -35,6 +35,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = line.GetLines(res, req)
 	case strings.HasPrefix(subPath, "/ProfilePicture"):
 		resCode, jsonRes = profile.UpdateProfilePic(res, req)
+	case strings.HasPrefix(subPath, "/GetUserInfo"):
+		resCode, jsonRes = profile.GetUserInfo(res, req)
 	default:
 		resCode = 200
 		jsonRes = map[string]string{

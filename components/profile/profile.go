@@ -3,6 +3,7 @@ package profile
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/static"
@@ -41,9 +42,9 @@ func UpdateProfilePic(res http.ResponseWriter, req *http.Request) (status int, j
 
 	UserID, session := tools.GetLoginStateOfOperator(req, reqData.SessionID, reqData.Operator)
 	if session == nil {
-		return 400, map[string]string{
-			"State": "Failde",
-			"Msg":   `User Not Sign In`,
+		return 400, ResData{
+			State: "Failed",
+			Msg:   "User Not Sign In",
 		}
 	}
 
@@ -74,4 +75,53 @@ func UpdateProfilePic(res http.ResponseWriter, req *http.Request) (status int, j
 		State: "Success",
 		Msg:   "Update Profile Picture Success",
 	}
+}
+
+func GetUserInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
+	type ReqData struct {
+		SessionID string
+		Operator  string
+	}
+	type ResData struct {
+		State      string
+		Msg        string
+		NickName   string
+		Phone      string
+		Mail       string
+		Gender     string
+		ProfilePic string
+		SignInTime time.Time
+	}
+	var (
+		reqData ReqData
+		err     error
+	)
+
+	if status, jsonRes = tools.GetPostJSON(req, &reqData); status != 200 {
+		return status, jsonRes
+	}
+
+	_, session := tools.GetLoginStateOfOperator(req, reqData.SessionID, reqData.Operator)
+	if session == nil {
+		return 400, ResData{
+			State: "Failed",
+			Msg:   "User Not Sign In",
+		}
+	}
+	resData := ResData{
+		State: "Success",
+		Msg:   "Get User Info Success",
+		Phone: reqData.Operator,
+	}
+	_, resData.Mail, resData.NickName, resData.Gender, _, _, resData.ProfilePic, resData.SignInTime, err =
+		database.GetUserByPhone(reqData.Operator)
+	if err != nil {
+		log.Println(err.Error())
+		return 400, ResData{
+			State: "Failed",
+			Msg:   err.Error(),
+		}
+	}
+
+	return 200, resData
 }

@@ -1,9 +1,11 @@
 package database
 
 import (
+	"database/sql"
 	"errors"
 	"log"
 	"strings"
+	"time"
 )
 
 //GetLines get Lines of user
@@ -67,4 +69,84 @@ func CreateLine(LineName, UserID string) error {
 		}
 	}
 	return nil
+}
+
+func GetLineInfo(LineName string, course *sql.Tx) (LineID, Name string, CreateTime time.Time, DBErr error) {
+	course, selfCourse, DBErr := Begin(course)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return "", "", time.Time{}, errors.New("DataBase Connection Error")
+	}
+	defer func() { GraceCommit(course, selfCourse, DBErr) }()
+
+	row := course.QueryRow("SELECT `ID`, `Time` FROM `Line` WHERE `Name`=?", LineName)
+	if DBErr = row.Scan(&LineID, &CreateTime); DBErr != nil {
+		return "", "", time.Time{}, DBErr
+	}
+	return LineID, Name, CreateTime, nil
+}
+
+//GetLineDetial Get some statics info of line
+func GetLineDetial(LineName string, course *sql.Tx) (LineID, Name string, Users []string, SliceNum, ImgNum int, CreateTime, LatestTime time.Time, DBErr error) {
+	course, selfCourse, DBErr := Begin(course)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return "", "", nil, 0, 0, time.Time{}, time.Time{}, errors.New("DataBase Connection Error")
+	}
+	defer func() { GraceCommit(course, selfCourse, DBErr) }()
+
+	if LineID, LineName, CreateTime, DBErr = GetLineInfo(LineName, course); DBErr != nil {
+		return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+	}
+	var (
+		imgNum     *int
+		latestTime *time.Time
+	)
+	const sqlCmd string = `
+		SELECT
+			SUM( LENGTH( "Gallery" ) - LENGTH( REPLACE ( "Gallery", ',', '' ) ) + 1 ),
+			COUNT( * ),
+			MAX( "Time" ) 
+		FROM
+			"Slice" 
+		WHERE
+			"LineID" = ?
+	`
+	row := course.QueryRow(strings.Replace(sqlCmd, `"`, `'`, -1), LineID)
+	if DBErr = row.Scan(&imgNum, &SliceNum, &latestTime); DBErr != nil {
+		return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+	}
+	if latestTime == nil {
+		latestTime = new(time.Time)
+	}
+	LatestTime = *latestTime
+	if imgNum == nil {
+		imgNum = new(int)
+	}
+	ImgNum = *imgNum
+
+	const sqlCmd2 string = `
+		SELECT DISTINCT
+			( "User"."NickName" ) 
+		FROM
+			"Slice"
+			INNER JOIN "User" ON "User"."ID" = "Slice"."UserID" 
+		WHERE
+			"Slice"."LineID" = ?
+	`
+	var rows *sql.Rows
+
+	if rows, DBErr = course.Query(strings.Replace(sqlCmd, `"`, `'`, -1), LineID); DBErr != nil {
+		return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+	}
+
+	for rows.Next() {
+		var user string
+		if DBErr = rows.Scan(&user); DBErr != nil {
+			return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+		}
+		Users = append(Users, user)
+	}
+
+	return LineID, Name, Users, SliceNum, ImgNum, CreateTime, LatestTime, DBErr
 }

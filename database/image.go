@@ -75,7 +75,7 @@ func UpdateImgVisibility(UserID, ImgHash, Visibility string, course *sql.Tx) (Er
 		log.Println(DBErr.Error())
 		return errors.New("DataBase Connection Error")
 	}
-	defer GraceCommit(course, selfCourse, DBErr)
+	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
 	sqlCmd := "Update `Image` SET `Visibility`=? WHERE `Hash`=? AND `UserID`=?"
 	_, DBErr = course.Exec(sqlCmd, Visibility, ImgHash, UserID)

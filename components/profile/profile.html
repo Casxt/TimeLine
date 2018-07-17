@@ -2,14 +2,14 @@
 <script src="/static/js/croppie.min.js"></script>
 <main class="container">
     <div class="row m-5">
-        <div class="col-sm-4">
+        <div class="col-sm-4 mb-3">
             <div class="card">
-                <img class="card-img-top" src="/static/image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c.jpg" data-toggle="modal"
-                    data-target="#PPU-Modal">
+                <img id="ProfilePic" class="card-img-top" src="" data-toggle="modal" data-target="#PPU-Modal">
                 <div class="card-body">
-                    <h5 class="card-title">NickName</h5>
-                    <p class="card-text">Phone</p>
-                    <p class="card-text">Mail</p>
+                    <h5 id="NickName" class="card-title"></h5>
+                    <p id="Phone" class="card-text"></p>
+                    <p id="Mail" class="card-text"></p>
+                    <small id="SignInTime" class="card-text"></small>
                 </div>
             </div>
         </div>
@@ -21,37 +21,19 @@
                     </li>
                 </ol>
             </nav>
-            <div class="card-group mb-4">
-                <div class="card">
+            <div id="LineCard" class="card-group mb-4">
+                <div id="LineCardTemplete" class="card" hidden>
                     <img class="card-img-top" src=".../100px180/" alt="Card image cap">
                     <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                        <small>Total</small>
+                        <h5 class="card-title">{LineName}</h5>
+                        <small>{Total}</small>
                         <br>
-                        <small>Yours</small>
+                        <small>{UserTotal}</small>
                         <br>
-                        <small>Total Image</small>
+                        <small>{TotalImage}</small>
                     </div>
                     <div class="card-footer">
-                        <small class="text-muted">Last updated 3 mins ago</small>
-                    </div>
-                </div>
-                <div class="card">
-                    <img class="card-img-top" src=".../100px180/" alt="Card image cap">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">Last updated 3 mins ago</small>
-                    </div>
-                </div>
-                <div class="card">
-                    <img class="card-img-top" src="/static/image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c.jpg">
-                    <div class="card-body">
-                        <h5 class="card-title">Card title</h5>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">Last updated 3 mins ago</small>
+                        <small class="text-muted">{LastUpdateTime}</small>
                     </div>
                 </div>
             </div>
@@ -103,14 +85,46 @@
                         <input type="file" class="custom-file-input" onchange="readFile(this)">
                         <label class="custom-file-label" for="customFile">Choose New Picture</label>
                     </div>
-                    <button type="button" class="btn btn-primary" onclick="newProfilePicture(this)">Save changes</button>
+                    <button type="button" class="btn btn-primary" onclick="newProfilePicture(this)">Upload</button>
                 </div>
             </div>
         </div>
     </div>
 </main>
 <script type="text/javascript">
-    let c = new Croppie(document.getElementById('PPU-Crop'), {
+    async function GetUserInfo() {
+        const Data = {
+            Operator: Cookies.Phone,
+            SessionID: Cookies.SessionID,
+        }
+        const Res = await JsonRequest('POST', '/api/GetUserInfo', Data);
+        if (Res.State == "Success") {
+            document.getElementById("ProfilePic").src = "/image/" + Res.ProfilePic;
+            document.getElementById("NickName").innerHTML = Res.NickName;
+            document.getElementById("Mail").innerHTML = Res.Mail;
+            document.getElementById("Phone").innerHTML = Res.Phone;
+            document.getElementById("SignInTime").innerHTML = Res.SignInTime.replace("T", " ").replace("Z", "");
+        } else {
+            //TODO:获取失败的提示
+        }
+
+    }
+    GetUserInfo();
+    async function GetLineInfo() {
+        const Data = {
+            Operator: Cookies.Phone,
+            SessionID: Cookies.SessionID,
+        }
+        const Res = await JsonRequest('POST', '/api/GetLines', Data);
+        if (Res.State = "Success" && Res.Lines.length > 0) {
+            for (const Line of Res.Lines) {
+                
+            }
+        } else {
+
+        }
+    }
+    let cropper = new Croppie(document.getElementById('PPU-Crop'), {
         viewport: {
             width: 190,
             height: 190
@@ -119,21 +133,17 @@
             width: 250,
             height: 250
         },
-        enableOrientation: true,
     });
 
     function readFile(input) {
         if (input.files && input.files[0]) {
-            //console.log(input.files[0]);
             const reader = new FileReader();
             reader.onload = function (e) {
-                c.bind({
+                cropper.bind({
                     url: e.target.result,
                 });
             }
             reader.readAsDataURL(input.files[0]);
-        } else {
-            swal("Sorry - you're browser doesn't support the FileReader API");
         }
     }
 
@@ -142,7 +152,7 @@
         const B = new AnimeButton(button);
         const Closer = B.OnLoding("disabled", "Submitting...");
 
-        const profilePicture = await c.result({
+        const profilePicture = await cropper.result({
             type: 'blob',
             format: 'jpeg',
             quality: 1,
@@ -152,8 +162,7 @@
         let imgs = new FormData()
         imgs.append('images', profilePicture);
         Imgjson = await FileRequest('POST', '/image', imgs);
-        //Imgjson.Hashs[0];
-        //Closer();
+
         if (Imgjson.State == "Success") {
             //B.Alert("btn btn-primary", Imgjson.Msg, 1000);
         } else {
@@ -175,6 +184,5 @@
             Closer();
             B.Alert("btn-warning btn ml-1 mt-2", ResJson.Msg, 3000);
         }
-
     }
 </script>

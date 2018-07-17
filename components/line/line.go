@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/static"
@@ -29,17 +30,22 @@ func Route(res http.ResponseWriter, req *http.Request) {
 
 //GetLines Get Lines of User
 func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
-	type Data struct {
+	type ReqData struct {
 		Operator  string
 		SessionID string
 	}
-	var data Data
+	type ResData struct {
+		State string
+		Msg   string
+		Lines []string
+	}
+	var reqData ReqData
 
-	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
+	if status, jsonRes = tools.GetPostJSON(req, &reqData); status != 200 {
 		return status, jsonRes
 	}
 
-	UserID, _ := tools.GetLoginStateOfOperator(req, data.SessionID, data.Operator)
+	UserID, _ := tools.GetLoginStateOfOperator(req, reqData.SessionID, reqData.Operator)
 	if UserID == "" {
 		return 400, map[string]string{
 			"State": "Failde",
@@ -57,17 +63,27 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 		}
 	}
 
-	type ResData struct {
-		State string
-		Msg   string
-		Lines []string
-	}
-
 	return 200, ResData{
 		State: "Success",
 		Msg:   "Lines Get Successful",
 		Lines: Lines,
 	}
+}
+
+//GetLineInfo return LineInfo include some sum info
+func GetLineInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
+
+	type LineInfo struct {
+		Name       string
+		Users      []string
+		TotalSlice int
+		TotalImage int
+		UserSlice  int
+		UserImg    int
+		CreateTime time.Time
+	}
+
+	return 200, LineInfo{}
 }
 
 //CreateLine will create a new line with specific name

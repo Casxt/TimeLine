@@ -27,7 +27,7 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	case req.Method == "POST":
 		status, result = UploadImage(res, req)
 		//match /image/8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
-	case regexp.MustCompile("^[a-z0-9]{64}/?$").MatchString(subPath):
+	case regexp.MustCompile("^/[a-z0-9]{64}/?$").MatchString(subPath):
 		status, result = GetImage(res, req)
 	default:
 		status, result, _ = static.GetPage("components", "image", "line.html")
@@ -50,11 +50,13 @@ func GetImage(res http.ResponseWriter, req *http.Request) (status int, byteRes [
 
 	//imgName = 8c2c78eb41c26bc571a004895427300c187c8f2c2f3c0600a73773b685a8ee0c
 	imgName := req.URL.Path[len("/image/") : len("/image/")+64]
-	_, _, _, _, err := database.GetImgInfo(imgName, UserID)
+	_, _, _, _, err := database.GetImgInfo(UserID, imgName)
 	if err != nil {
+		log.Println(err.Error())
 		resByte, _ := json.Marshal(map[string]string{
-			"State": "Failde",
-			"Msg":   "User Not Have This Img",
+			"State":  "Failde",
+			"Msg":    "User Not Have This Img",
+			"Detial": err.Error(),
 		})
 		return 400, resByte
 	}
