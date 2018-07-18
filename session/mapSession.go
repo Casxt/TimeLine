@@ -2,6 +2,7 @@ package session
 
 import (
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -35,7 +36,7 @@ func New(req *http.Request) IO {
 	session = new(Session)
 	session.init(sessionID)
 	session.ExpireTime(time.Duration(time.Hour * 24 * 30))
-	session.ExtraInfo(req.RemoteAddr, req.UserAgent())
+	session.ExtraInfo(req.RemoteAddr[0:strings.LastIndex(req.RemoteAddr, ":")], req.UserAgent())
 	sessionMap[sessionID] = session
 	return session
 }
