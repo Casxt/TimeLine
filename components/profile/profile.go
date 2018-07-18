@@ -125,3 +125,44 @@ func GetUserInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 
 	return 200, resData
 }
+
+func ChangeNickName(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
+	type ReqData struct {
+		SessionID string
+		Operator  string
+		NewName   string
+	}
+	type ResData struct {
+		State string
+		Msg   string
+	}
+	var reqData ReqData
+	if status, jsonRes = tools.GetPostJSON(req, &reqData); status != 200 {
+		return status, jsonRes
+	}
+
+	UserID, _ := tools.GetLoginStateOfOperator(req, reqData.SessionID, reqData.Operator)
+	if UserID == "" {
+		return 400, ResData{
+			State: "Failed",
+			Msg:   "User Not Sign In",
+		}
+	}
+	if !tools.ChecNickName(reqData.NewName) {
+		return 400, ResData{
+			State: "Failed",
+			Msg:   "Invalid Name",
+		}
+	}
+	if err := database.UpdateNickName(UserID, reqData.NewName, nil); err != nil {
+		log.Println("ChangeNickName", err.Error())
+		return 500, ResData{
+			State: "Failed",
+			Msg:   "UpdateNickName Failed",
+		}
+	}
+	return 200, ResData{
+		State: "Success",
+		Msg:   "UpdateNickName Success",
+	}
+}

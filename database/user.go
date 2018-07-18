@@ -3,6 +3,7 @@ package database
 import (
 	"crypto/rand"
 	"crypto/sha256"
+	"database/sql"
 	"encoding/hex"
 	"errors"
 	"log"
@@ -110,7 +111,7 @@ func UpdateProfilePic(UserID, ImgHash string) (ErrorMsg error) {
 		log.Println(DBErr.Error())
 		return errors.New("DataBase Connection Error")
 	}
-	defer GraceCommit(course, selfCourse, DBErr)
+	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
 	//set img Visibility to Public
 	UpdateImgVisibility(UserID, ImgHash, "Public", course)
@@ -122,5 +123,23 @@ func UpdateProfilePic(UserID, ImgHash string) (ErrorMsg error) {
 		return DBErr
 	}
 
+	return nil
+}
+
+//UpdateNickName Update User NickName
+func UpdateNickName(UserID, NewName string, course *sql.Tx) (DBErr error) {
+	course, selfCourse, DBErr := Begin(course)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return errors.New("DataBase Connection Error")
+	}
+	defer func() { GraceCommit(course, selfCourse, DBErr) }()
+
+	sqlCmd := "Update `User` SET `NickName`=? WHERE `ID`=?"
+	_, DBErr = course.Exec(sqlCmd, NewName, UserID)
+	if DBErr != nil {
+		log.Println("UpdateNickName:", DBErr.Error())
+		return DBErr
+	}
 	return nil
 }

@@ -43,6 +43,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = profile.UpdateProfilePic(res, req)
 	case strings.HasPrefix(subPath, "/GetUserInfo"):
 		resCode, jsonRes = profile.GetUserInfo(res, req)
+	case strings.HasPrefix(subPath, "/ChangeNickName"):
+		resCode, jsonRes = profile.ChangeNickName(res, req)
 
 	default:
 		resCode = 200
