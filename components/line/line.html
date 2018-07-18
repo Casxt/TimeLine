@@ -106,8 +106,13 @@
                         const d = y > x ? x : y;
                         let canvas = document.getElementById(ImgID);
                         canvas.height = canvas.width;
-                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, canvas.height,
-                            canvas.height);
+                        /*
+                        canvas.getContext("2d").scale(canvas.height/2/d,canvas.height/2/d);
+                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0,2 * d,
+                        2 * d);
+                        */
+                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0,canvas.height,
+                        canvas.height);
                         canvas.img = this;
                     }
                     ImgHtml += ImgTemplet.replace("{imgID}", ImgID);
