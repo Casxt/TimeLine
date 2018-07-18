@@ -71,6 +71,7 @@ func CreateLine(LineName, UserID string) error {
 	return nil
 }
 
+//GetLineInfo Get Line Info
 func GetLineInfo(LineName string, course *sql.Tx) (LineID, Name string, CreateTime time.Time, DBErr error) {
 	course, selfCourse, DBErr := Begin(course)
 	if DBErr != nil {
@@ -86,17 +87,18 @@ func GetLineInfo(LineName string, course *sql.Tx) (LineID, Name string, CreateTi
 	return LineID, Name, CreateTime, nil
 }
 
-//GetLineDetial Get some statics info of line
-func GetLineDetial(LineName string, course *sql.Tx) (LineID, Name string, Users []string, SliceNum, ImgNum int, CreateTime, LatestTime time.Time, DBErr error) {
+//GetLineDetail Get some statics info of line
+//contain info of GetLineInfo
+func GetLineDetail(LineName string, course *sql.Tx) (LineID, Name, LatestImg string, Users []string, SliceNum, ImgNum int, CreateTime, LatestTime time.Time, DBErr error) {
 	course, selfCourse, DBErr := Begin(course)
 	if DBErr != nil {
 		log.Println(DBErr.Error())
-		return "", "", nil, 0, 0, time.Time{}, time.Time{}, errors.New("DataBase Connection Error")
+		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, errors.New("DataBase Connection Error")
 	}
 	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
 	if LineID, LineName, CreateTime, DBErr = GetLineInfo(LineName, course); DBErr != nil {
-		return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 	}
 	var (
 		imgNum     *int
@@ -110,11 +112,10 @@ func GetLineDetial(LineName string, course *sql.Tx) (LineID, Name string, Users 
 		FROM
 			"Slice" 
 		WHERE
-			"LineID" = ?
-	`
-	row := course.QueryRow(strings.Replace(sqlCmd, `"`, `'`, -1), LineID)
+			"LineID" = ?`
+	row := course.QueryRow(strings.Replace(sqlCmd, `"`, "`", -1), LineID)
 	if DBErr = row.Scan(&imgNum, &SliceNum, &latestTime); DBErr != nil {
-		return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 	}
 	if latestTime == nil {
 		latestTime = new(time.Time)
@@ -126,27 +127,45 @@ func GetLineDetial(LineName string, course *sql.Tx) (LineID, Name string, Users 
 	ImgNum = *imgNum
 
 	const sqlCmd2 string = `
-		SELECT DISTINCT
-			( "User"."NickName" ) 
+		SELECT 
+			"User"."NickName" 
 		FROM
-			"Slice"
-			INNER JOIN "User" ON "User"."ID" = "Slice"."UserID" 
+			"User"
+			INNER JOIN "Group" ON "User"."ID" = "Group"."UserID" 
 		WHERE
-			"Slice"."LineID" = ?
-	`
+			"Group"."LineID" = ?`
 	var rows *sql.Rows
 
-	if rows, DBErr = course.Query(strings.Replace(sqlCmd, `"`, `'`, -1), LineID); DBErr != nil {
-		return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+	if rows, DBErr = course.Query(strings.Replace(sqlCmd2, `"`, "`", -1), LineID); DBErr != nil {
+		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 	}
 
 	for rows.Next() {
 		var user string
 		if DBErr = rows.Scan(&user); DBErr != nil {
-			return "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+			return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 		}
 		Users = append(Users, user)
 	}
 
-	return LineID, Name, Users, SliceNum, ImgNum, CreateTime, LatestTime, DBErr
+	const sqlCmd3 string = `
+		SELECT
+			"Gallery" 
+		FROM
+			"Slice" 
+		WHERE
+			"LineID" = ? AND "Gallery" != '' 
+			ORDER BY "Time" DESC
+			LIMIT 1`
+
+	if row = course.QueryRow(strings.Replace(sqlCmd3, `"`, "`", -1), LineID); DBErr != nil {
+		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+	}
+
+	if DBErr = row.Scan(&LatestImg); DBErr != nil {
+		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
+	}
+	LatestImg = strings.Split(LatestImg, ",")[0]
+
+	return LineID, Name, LatestImg, Users, SliceNum, ImgNum, CreateTime, LatestTime, DBErr
 }

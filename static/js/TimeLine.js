@@ -71,20 +71,20 @@ String format Space Start
  * @param {*} args 
  */
 String.prototype.format = function (args) {
-    var result = this;
+    
+    let result = this;
     if (arguments.length > 0) {
         if (arguments.length == 1 && typeof (args) == "object") {
-            for (var key in args) {
+            for (const key in args) {
                 if (args[key] != undefined) {
-                    var reg = new RegExp("({" + key + "})", "g");
-                    result = result.replace(reg, args[key]);
+                    result = result.replace(RegExp("{" + key + "}","g"), args[key]);
                 }
             }
         } else {
-            for (varId  = 0; i < arguments.length; i++) {
+            for (let i  = 0; i < arguments.length; i++) {
                 if (arguments[i] != undefined) {　　　　　　　　　　　　
-                    var reg = new RegExp("({)" + i + "(})", "g");
-                    result = result.replace(reg, arguments[i]);
+                    const reg = new RegExp("({)" + i + "(})", "g");
+                    result = result.replace("{" + i + "}", arguments[i]);
                 }
             }
         }
@@ -92,7 +92,9 @@ String.prototype.format = function (args) {
     return result;
 }
 
-
+function FormtTime(TimeStr){
+    return TimeStr.replace("T"," ").replace("Z","")
+}
 
 class AnimeButton {
     constructor(buttonId) {

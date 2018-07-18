@@ -17,30 +17,36 @@
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-ite>m">
-                        <a href="">Your Lines</a>
+                        <a href="#">Your Lines</a>
                     </li>
                 </ol>
             </nav>
             <div id="LineCard" class="card-group mb-4">
-                <div id="LineCardTemplete" class="card" hidden>
-                    <img class="card-img-top" src=".../100px180/" alt="Card image cap">
-                    <div class="card-body">
-                        <h5 class="card-title">{LineName}</h5>
-                        <small>{Total}</small>
-                        <br>
-                        <small>{UserTotal}</small>
-                        <br>
-                        <small>{TotalImage}</small>
-                    </div>
-                    <div class="card-footer">
-                        <small class="text-muted">{LastUpdateTime}</small>
+                <!--class="card-group mb-4"-->
+                <div id="LineCardTemplete" hidden>
+                    <div class="card">
+                        <!--<canvas id="{CanvasName}" class="card-img-top rounded"></canvas>-->
+                        <img id="{CanvasName}" class="card-img-top rounded b-1">
+                        <div class="card-body">
+                            <h5 class="card-title">{LineName}</h5>
+                            <small>SliceNum:{SliceNum}</small>
+                            <br>
+                            <small>ImageNum:{ImageNum}</small>
+                            <br>
+                            <small>Users:{Users}</small>
+                        </div>
+                        <div class="card-footer">
+                            <small class="text-muted">Create@{CreateTime}</small>
+                            <br>
+                            <small class="text-muted">LatestUpdate@{LastUpdateTime}</small>
+                        </div>
                     </div>
                 </div>
             </div>
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item">
-                        <a href="">Profile Detail</a>
+                        <a href="#">Profile Detail</a>
                     </li>
                 </ol>
             </nav>
@@ -92,6 +98,24 @@
     </div>
 </main>
 <script type="text/javascript">
+    async function GetLatestSlice(CanvasName, LineName, LatestImg) {
+        let img = new Image();
+        img.onload = function () {
+            const y = Math.round(this.height / 2);
+            const x = Math.round(this.width / 2);
+            const d = y > x ? x : y;
+
+            let canvas = document.createElement("canvas");
+            canvas.width = 2 * d;
+            canvas.height = 2 * d;
+            canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, 2 * d,
+                2 * d);
+            document.getElementById(CanvasName).src = canvas.toDataURL("image/jpeg");
+        }
+        img.src = "/image/" + LatestImg;
+
+    }
+
     async function GetUserInfo() {
         const Data = {
             Operator: Cookies.Phone,
@@ -109,21 +133,39 @@
         }
 
     }
-    GetUserInfo();
     async function GetLineInfo() {
-        const Data = {
+        let Data = {
             Operator: Cookies.Phone,
             SessionID: Cookies.SessionID,
         }
         const Res = await JsonRequest('POST', '/api/GetLines', Data);
+        const Templete = document.getElementById("LineCardTemplete").innerHTML;
         if (Res.State = "Success" && Res.Lines.length > 0) {
             for (const Line of Res.Lines) {
-                
+                Data.LineName = Line;
+                LineInfo = await JsonRequest('POST', '/api/GetLineInfo', Data);
+                if (LineInfo.State = "Success") {
+                    document.getElementById("LineCard").innerHTML += Templete.format({
+                        LineName: Line,
+                        Users: LineInfo.Users,
+                        SliceNum: LineInfo.SliceNum,
+                        ImageNum: LineInfo.ImageNum,
+                        LastUpdateTime: FormtTime(LineInfo.LatestTime),
+                        CanvasName: "Line-Canvas-" + Line,
+                        CreateTime: FormtTime(LineInfo.CreateTime),
+                    });
+                    await GetLatestSlice("Line-Canvas-" + Line, Line, LineInfo.LatestImg);
+                } else {
+
+                }
             }
         } else {
 
         }
     }
+    GetUserInfo();
+    GetLineInfo();
+
     let cropper = new Croppie(document.getElementById('PPU-Crop'), {
         viewport: {
             width: 190,

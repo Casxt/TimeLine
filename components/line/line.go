@@ -72,18 +72,48 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 
 //GetLineInfo return LineInfo include some sum info
 func GetLineInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
-
-	type LineInfo struct {
+	type ReqData struct {
+		Operator  string
+		SessionID string
+		LineName  string
+	}
+	type ResData struct {
 		Name       string
+		LatestImg  string
 		Users      []string
-		TotalSlice int
-		TotalImage int
-		UserSlice  int
-		UserImg    int
+		SliceNum   int
+		ImageNum   int
 		CreateTime time.Time
+		LatestTime time.Time
 	}
 
-	return 200, LineInfo{}
+	var (
+		reqData ReqData
+		resData ResData
+		err     error
+	)
+
+	if status, jsonRes = tools.GetPostJSON(req, &reqData); status != 200 {
+		return status, jsonRes
+	}
+
+	UserID, _ := tools.GetLoginStateOfOperator(req, reqData.SessionID, reqData.Operator)
+	if UserID == "" {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "User Not Sign In",
+		}
+	}
+	_, resData.Name, resData.LatestImg, resData.Users, resData.SliceNum, resData.ImageNum, resData.CreateTime, resData.LatestTime, err = database.GetLineDetail(reqData.LineName, nil)
+	if err != nil {
+		log.Println(err.Error())
+		return 500, map[string]string{
+			"State":  "Failde",
+			"Msg":    "Get Line Info Failed",
+			"Detail": err.Error(),
+		}
+	}
+	return 200, resData
 }
 
 //CreateLine will create a new line with specific name
