@@ -4,3 +4,4 @@ debug.test
 .vscode/
 config.json
 static/image/*
+.exe
