@@ -7,5 +7,5 @@ func CheckImgHash(Hash string) bool {
 }
 
 func ChecNickName(Hash string) bool {
-	return regexp.MustCompile("^[\\S]{4,32}$").MatchString(Hash)
+	return regexp.MustCompile("^[\\S]{2,32}$").MatchString(Hash)
 }

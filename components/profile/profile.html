@@ -6,7 +6,8 @@
             <div class="card">
                 <img id="ProfilePic" class="card-img-top" src="" data-toggle="modal" data-target="#PPU-Modal">
                 <div class="card-body">
-                    <h5 id="NickName" class="card-title"></h5>
+                    <h5 id="NickName" class="card-title" onclick ="showInputNickName(this);"></h5>
+                    <input id="InputNickName" class="card-title" onKeyPress="if(event.keyCode == 13 || event.which == 13){ChangeNickName(this);}" hidden>
                     <p id="Phone" class="card-text"></p>
                     <p id="Mail" class="card-text"></p>
                     <small id="SignInTime" class="card-text"></small>
@@ -23,25 +24,7 @@
             </nav>
             <div id="LineCard" class="card-group mb-4">
                 <!--class="card-group mb-4"-->
-                <div id="LineCardTemplete" hidden>
-                    <div class="card">
-                        <!--<canvas id="{CanvasName}" class="card-img-top rounded"></canvas>-->
-                        <img id="{CanvasName}" class="card-img-top rounded b-1">
-                        <div class="card-body">
-                            <h5 class="card-title">{LineName}</h5>
-                            <small>SliceNum:{SliceNum}</small>
-                            <br>
-                            <small>ImageNum:{ImageNum}</small>
-                            <br>
-                            <small>Users:{Users}</small>
-                        </div>
-                        <div class="card-footer">
-                            <small class="text-muted">Create@{CreateTime}</small>
-                            <br>
-                            <small class="text-muted">LatestUpdate@{LastUpdateTime}</small>
-                        </div>
-                    </div>
-                </div>
+
             </div>
             <nav>
                 <ol class="breadcrumb">
@@ -96,8 +79,53 @@
             </div>
         </div>
     </div>
+    <!--Line card Template-->
+    <div id="LineCardTemplete" hidden>
+        <div class="card">
+            <img id="{CanvasName}" class="card-img-top rounded">
+            <div class="card-body">
+                <h5 class="card-title">{LineName}</h5>
+                <small>SliceNum:{SliceNum}</small>
+                <br>
+                <small>ImageNum:{ImageNum}</small>
+                <br>
+                <small>Users:{Users}</small>
+            </div>
+            <div class="card-footer">
+                <small class="text-muted">Create@{CreateTime}</small>
+                <br>
+                <small class="text-muted">LatestUpdate@{LastUpdateTime}</small>
+            </div>
+        </div>
+    </div>
 </main>
 <script type="text/javascript">
+    //Change NickName Space
+    function showInputNickName(showName) {
+        showName.setAttribute('hidden', 'hidden');
+        document.getElementById('InputNickName').value = showName.innerHTML;
+        document.getElementById('InputNickName').removeAttribute('hidden');
+    }
+
+    async function ChangeNickName(inputName) {
+        const Data = {
+            Operator: Cookies.Phone,
+            SessionID: Cookies.SessionID,
+            NewName: inputName.value,
+        }
+        const Res = await JsonRequest('POST', '/api/ChangeNickName', Data);
+        console.log(Res);
+        if (Res.State == "Success") {
+            const NickNameShower = document.getElementById('NickName');
+            NickNameShower.innerHTML = inputName.value;
+            NickNameShower.removeAttribute('hidden');
+            inputName.setAttribute('hidden', 'hidden');
+        } else {
+            //TODO:获取失败的提示
+        }
+
+    }
+
     async function GetLatestSlice(CanvasName, LineName, LatestImg) {
         let img = new Image();
         img.onload = function () {
