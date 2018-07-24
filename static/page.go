@@ -2,11 +2,13 @@ package static
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"log"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
 
 	"github.com/Casxt/TimeLine/config"
 )
@@ -61,10 +63,16 @@ func GetFile(names ...string) (status int, File []byte, err error) {
 	absPath = filepath.FromSlash(path.Join(config.ProjectPath, path.Join(names...)))
 	content, err = ioutil.ReadFile(absPath)
 
-	if err != nil {
-		log.Println(err.Error())
+	switch {
+	case err == nil:
+	case strings.HasSuffix(err.Error(), "The system cannot find the file specified."):
+		log.Println("GetFile", absPath, "Not Found.")
+		return 404, nil, errors.New("File Not Found")
+	default:
+		log.Println("GetFile", err.Error())
 		return 500, nil, err
 	}
+
 	//log.Println(mime.TypeByExtension(path.Ext(names[len(names)-1])))
 	//log.Println(path.Ext(names[len(names)-1]))
 	//res.Header().Add("Content-Type", mime.TypeByExtension(path.Ext(names[len(names)-1])))
