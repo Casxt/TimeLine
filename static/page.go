@@ -13,9 +13,6 @@ import (
 	"github.com/Casxt/TimeLine/config"
 )
 
-//ProjectPath is path that save the static file
-//var ProjectPath = "C:\\Users\\Surface\\go\\src\\github.com\\Casxt\\TimeLine"
-
 //GetPage return the builted html
 func GetPage(names ...string) (status int, Page []byte, err error) {
 	var absPath string
@@ -72,10 +69,6 @@ func GetFile(names ...string) (status int, File []byte, err error) {
 		log.Println("GetFile", err.Error())
 		return 500, nil, err
 	}
-
-	//log.Println(mime.TypeByExtension(path.Ext(names[len(names)-1])))
-	//log.Println(path.Ext(names[len(names)-1]))
-	//res.Header().Add("Content-Type", mime.TypeByExtension(path.Ext(names[len(names)-1])))
 	return 200, content, err
 }
 
