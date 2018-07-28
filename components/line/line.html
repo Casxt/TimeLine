@@ -8,13 +8,13 @@
                 <button id="Anniversary-Button" type="button" class="btn btn-outline-secondary" onclick="ToggleSliceType(this)" value="Anniversary">Anniversary</button>
                 <div class="btn-group" role="group">
                     <button id="Visibility" name="Visibility" type="button" class="btn btn-outline-secondary dropdown-toggle" style="border-top-right-radius: 0;"
-                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="Group" onchange="this.value=this.innerHTML;">
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="Protect">
                         Group
                     </button>
                     <div class="dropdown-menu" aria-labelledby="Visibility">
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').innerHTML='Group';">Group</a>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').innerHTML='All';">All</a>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').innerHTML='Self';">Self</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Protect';document.getElementById('Visibility').innerHTML=this.innerHTML;">Group</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Public';document.getElementById('Visibility').innerHTML=this.innerHTML;">All</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Private';document.getElementById('Visibility').innerHTML=this.innerHTML;">Self</a>
                     </div>
                 </div>
             </div>

@@ -100,7 +100,13 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 
 	//TODO: Check imgHash exist
 
-	//TODO: Check Content Visibility Longitude Latitude LineName
+	//TODO: Check Content Longitude Latitude LineName
+	if data.Visibility != "Protect" && data.Visibility != "Public" && data.Visibility != "Private" {
+		return 400, map[string]string{
+			"State": "Failde",
+			"Msg":   "Invalid Visibility",
+		}
+	}
 
 	Location := data.Longitude + "," + data.Latitude
 	//TODO: Check How Many Slice User have create today
