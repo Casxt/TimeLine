@@ -3,11 +3,11 @@
     <div class="card mt-2">
         <form id="AddSlice-Form" class="card-body cols" style="padding: 0rem;padding-right: 1rem;">
             <div class="btn-group mb-1" role="group" aria-label="Button group with nested dropdown">
-                <button id="Memory-Button" type="button" class="btn btn-dark" style="border-bottom-left-radius: 0;" onclick="ToggleSliceType(this)"
+                <button id="Memory-Button" type="button" class="btn btn-secondary" style="border-bottom-left-radius: 0;" onclick="ToggleSliceType(this)"
                     value="Memory">Memory</button>
-                <button id="Anniversary-Button" type="button" class="btn btn-outline-dark" onclick="ToggleSliceType(this)" value="Anniversary">Anniversary</button>
+                <button id="Anniversary-Button" type="button" class="btn btn-outline-secondary" onclick="ToggleSliceType(this)" value="Anniversary">Anniversary</button>
                 <div class="btn-group" role="group">
-                    <button id="Visibility" name="Visibility" type="button" class="btn btn-outline-dark dropdown-toggle" style="border-top-right-radius: 0;"
+                    <button id="Visibility" name="Visibility" type="button" class="btn btn-outline-secondary dropdown-toggle" style="border-top-right-radius: 0;"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="Group" onchange="this.value=this.innerHTML;">
                         Group
                     </button>
@@ -222,8 +222,8 @@
             thisButton = btn;
             otherButton = document.getElementById("Memory-Button");
         }
-        thisButton.className = "btn btn-dark";
-        otherButton.className = "btn btn-outline-dark";
+        thisButton.className = "btn btn-secondary";
+        otherButton.className = "btn btn-outline-secondary";
         document.getElementById("Type").value = btn.value;
     }
 </script>
