@@ -1,31 +1,39 @@
-<main role="main" class="container mt-5 mb-5 w-100">
+<main role="main" class="container w-100">
     <!--text-center-->
-    <div class="card mt-3">
-        <form id="AddSlice-Form" class="card-body cols container">
-            <textarea class="form-control" id="Content" name="Content" rows="3"></textarea>
-            <div class="row mt-2 w-auto float-md-right mr-1 ml-1">
-                <div class="custom-file w-auto mr-1 mt-2">
-                    <div class="btn btn-primary">
-                        <input name="imgs" type="file" multiple="multiple" style="width: 6rem; opacity: 0; position: absolute; z-index: -1" id="images"
-                            onchange="preview(this)">
-                        <label style="width:6rem;position:relative;margin: 1px" for="images">Choose Img</label>
+    <div class="card mt-2">
+        <form id="AddSlice-Form" class="card-body cols" style="padding: 0rem;padding-right: 1rem;">
+            <div class="btn-group mb-1" role="group" aria-label="Button group with nested dropdown">
+                <button id="Memory-Button" type="button" class="btn btn-dark" style="border-bottom-left-radius: 0;" onclick="ToggleSliceType(this)"
+                    value="Memory">Memory</button>
+                <button id="Anniversary-Button" type="button" class="btn btn-outline-dark" onclick="ToggleSliceType(this)" value="Anniversary">Anniversary</button>
+                <div class="btn-group" role="group">
+                    <button id="Visibility" name="Visibility" type="button" class="btn btn-outline-dark dropdown-toggle" style="border-top-right-radius: 0;"
+                        data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="Group" onchange="this.value=this.innerHTML;">
+                        Group
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="Visibility">
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').innerHTML='Group';">Group</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').innerHTML='All';">All</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').innerHTML='Self';">Self</a>
                     </div>
                 </div>
-                <select name="Type" class="form-control mr-1 ml-1 mt-2 w-auto" id="Type">
-                    <option value="Memory">Memory</option>
-                    <option value="Anniversary">Anniversary</option>
-                </select>
-                <select name="Visibility" class="form-control mr-1 ml-1 mt-2 w-auto" id="Visibility">
-                    <option value="Protect">Group</option>
-                    <option value="Public">All</option>
-                    <option value="Private">Self</option>
-                </select>
+            </div>
+
+            <textarea class="form-control m-2" id="Content" name="Content" rows="3"></textarea>
+            <div class="row  m-2">
+
+                <div class="custom-file m-1 w-25">
+                    <input name="imgs" type="file" class="custom-file-input" id="images" onchange="preview(this)">
+                    <label class="custom-file-label" for="images"></label>
+                </div>
+
+                <input id="Type" name="Type" type="hidden" value="Memory">
                 <input id="Latitude" name="Latitude" type="hidden" value="0">
                 <input id="Longitude" name="Longitude" type="hidden" value="0">
-                <input id="Time" name="Time" class="form-control mr-1 ml-1 mt-2 w-auto" style="text-align: center;font-size: 0.85rem;padding: 0.4rem"
+                <input id="Time" name="Time" class="form-control m-1 w-auto" style="text-align: center;font-size: 0.85rem;padding: 0.4rem"
                     type="datetime-local" value="">
-                <!--type="submit" width: 11.5rem;-->
-                <button class="btn btn-primary ml-1 mt-2" id="AddSlice-Button" type="button" onclick="SubmitSlice()">Submit</button>
+
+                <button class="btn btn-primary m-1" id="AddSlice-Button" type="button" onclick="SubmitSlice()">Submit</button>
             </div>
         </form>
         <div class="container mb-3" id="preview">
@@ -73,7 +81,7 @@
     const SliceTemplate = document.getElementById("SliceTemplet").innerHTML;
     //Get Slice of line
     async function GetSlice(LineName) {
-        let Data = {
+        const Data = {
             Operator: Cookies.Phone,
             SessionID: Cookies.SessionID,
             LineName: LineName,
@@ -99,7 +107,7 @@
             const rawCanvas = document.createElement("canvas");
             if (slice.Gallery != null) {
                 for (const imgHash of slice.Gallery) {
-                    let img = new Image();
+                    const img = new Image();
                     const ImgID = "Img-" + count;
                     img.onload = function () {
                         const y = Math.round(this.height / 2);
@@ -112,7 +120,7 @@
 
                         rawCanvas.height = this.height;
                         rawCanvas.width = this.width;
-                        rawCanvas.getContext("2d").drawImage(this,0,0);
+                        rawCanvas.getContext("2d").drawImage(this, 0, 0);
                         canvas.img = rawCanvas.toDataURL("image/jpeg");
                     }
                     ImgHtml += ImgTemplet.replace("{imgID}", ImgID);
@@ -125,7 +133,7 @@
         }
     }
     GetSlice(LineName);
-    
+
     //Update Time and location
     async function updateInfo() {
         const offset = new Date();
@@ -199,9 +207,23 @@
         const Slicejson = await JsonRequest('POST', '/api/AddSlice', Data);
         if (Slicejson.State == "Success") {
             Closer();
+            location.reload();
         } else {
             Closer();
             B.Alert("btn-warning btn ml-1 mt-2", Slicejson.Msg, 3000);
         }
+    }
+    function ToggleSliceType(btn) {
+        let thisButton, otherButton;
+        if (btn.id == "Memory-Button") {
+            thisButton = btn;
+            otherButton = document.getElementById("Anniversary-Button");
+        } else if (btn.id == "Anniversary-Button") {
+            thisButton = btn;
+            otherButton = document.getElementById("Memory-Button");
+        }
+        thisButton.className = "btn btn-dark";
+        otherButton.className = "btn btn-outline-dark";
+        document.getElementById("Type") = btn.value;
     }
 </script>
