@@ -21,6 +21,9 @@ func Route(res http.ResponseWriter, req *http.Request) {
 	//match /linecreate*
 	case strings.HasPrefix(strings.ToLower(subPath), "create"):
 		status, result, _ = static.GetPage("components", "line", "createLine.html")
+	//match /lineedit*
+	case strings.HasPrefix(strings.ToLower(subPath), "edit"):
+		status, result, _ = static.GetPage("components", "line", "editLine.html")
 	default:
 		status, result, _ = static.GetPage("components", "line", "line.html")
 	}
@@ -78,6 +81,8 @@ func GetLineInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 		LineName  string
 	}
 	type ResData struct {
+		State      string
+		Msg        string
 		Name       string
 		LatestImg  string
 		Users      []string
@@ -113,6 +118,8 @@ func GetLineInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 			"Detail": err.Error(),
 		}
 	}
+	resData.State = "Success"
+	resData.Msg = "Get Line Info Success"
 	return 200, resData
 }
 

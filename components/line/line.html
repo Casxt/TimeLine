@@ -78,7 +78,7 @@
     latitudeInput = document.getElementById('Latitude');
     longitudeInput = document.getElementById('Longitude');
     const re = /^https?:\/\/\S+?\/line\/([^/^#^\?^\s]+)/g;
-    const LineName = re.exec(window.location.href)[1];
+    const LineName = re.exec(window.location.href.toLocaleLowerCase())[1];
     const ImgTemplet =
         '<canvas id="{imgID}" class="rounded m-2 w-25" onclick=\'document.getElementById("ImgModal-img").src=this.img;\' data-toggle="modal" data-target="#ImgModal""></canvas> ';
     const SliceList = document.getElementById("SliceList");

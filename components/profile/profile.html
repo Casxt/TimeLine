@@ -177,7 +177,7 @@
             for (const Line of Res.Lines) {
                 Data.LineName = Line;
                 LineInfo = await JsonRequest('POST', '/api/GetLineInfo', Data);
-                if (LineInfo.State = "Success") {
+                if (LineInfo.State == "Success") {
                     document.getElementById("LineCard").innerHTML += Templete.format({
                         LineName: Line,
                         Users: LineInfo.Users,
