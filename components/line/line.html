@@ -68,7 +68,7 @@
     const re = /^https?:\/\/\S+?\/line\/([^/^#^\?^\s]+)/g;
     const LineName = re.exec(window.location.href)[1];
     const ImgTemplet =
-        '<canvas id="{imgID}" class="rounded m-2 w-25" onclick=\'document.getElementById("ImgModal-img").src=this.img.src;\' data-toggle="modal" data-target="#ImgModal""></canvas> ';
+        '<canvas id="{imgID}" class="rounded m-2 w-25" onclick=\'document.getElementById("ImgModal-img").src=this.img;\' data-toggle="modal" data-target="#ImgModal""></canvas> ';
     const SliceList = document.getElementById("SliceList");
     const SliceTemplate = document.getElementById("SliceTemplet").innerHTML;
     //Get Slice of line
@@ -83,7 +83,7 @@
 
         let count = 0;
         for (const slice of Res.Slices) {
-            const Contents = slice.Content.split("\r\n");
+            const Contents = slice.Content.split(/\r?\n/);
             let SliceHtml = SliceTemplate.replace("{Title}", Contents[0]);
             let ImgHtml = "";
             let Content = "";
@@ -95,7 +95,8 @@
             }
             SliceHtml = SliceHtml.replace("{Content}", Content);
             SliceHtml = SliceHtml.replace("{Name}", slice.UserName);
-            SliceHtml = SliceHtml.replace("{Time}", slice.Time.replace("T", " ").replace("Z", ""));
+            SliceHtml = SliceHtml.replace("{Time}", FormatTime(slice.Time));
+            const rawCanvas = document.createElement("canvas");
             if (slice.Gallery != null) {
                 for (const imgHash of slice.Gallery) {
                     let img = new Image();
@@ -104,16 +105,15 @@
                         const y = Math.round(this.height / 2);
                         const x = Math.round(this.width / 2);
                         const d = y > x ? x : y;
-                        let canvas = document.getElementById(ImgID);
+                        const canvas = document.getElementById(ImgID);
                         canvas.height = canvas.width;
-                        /*
-                        canvas.getContext("2d").scale(canvas.height/2/d,canvas.height/2/d);
-                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0,2 * d,
-                        2 * d);
-                        */
-                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0,canvas.height,
-                        canvas.height);
-                        canvas.img = this;
+                        canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, canvas.height,
+                            canvas.height);
+
+                        rawCanvas.height = this.height;
+                        rawCanvas.width = this.width;
+                        rawCanvas.getContext("2d").drawImage(this,0,0);
+                        canvas.img = rawCanvas.toDataURL("image/jpeg");
                     }
                     ImgHtml += ImgTemplet.replace("{imgID}", ImgID);
                     img.src = "/image/" + imgHash;
@@ -125,6 +125,7 @@
         }
     }
     GetSlice(LineName);
+    
     //Update Time and location
     async function updateInfo() {
         const offset = new Date();

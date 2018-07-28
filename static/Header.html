@@ -56,7 +56,7 @@
       const Res = await JsonRequest('POST', '/api/GetLines', Data);
       let listHtml = "";
       if (Res.Lines == undefined) {
-        List.innerHTML = '<a class="dropdown-item" href="">Need Sign IN</a>';
+        List.innerHTML = '<a class="dropdown-item" href="/SignIn">Need Sign IN</a>';
       }
       for (const line of Res.Lines) {
         listHtml += '<a class="dropdown-item" href="{Herf}">{Name}</a>'.format({

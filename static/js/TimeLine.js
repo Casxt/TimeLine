@@ -92,7 +92,8 @@ String.prototype.format = function (args) {
     return result;
 }
 
-function FormtTime(TimeStr){
+
+function FormatTime(TimeStr){
     return TimeStr.replace("T"," ").replace("Z","")
 }
 
