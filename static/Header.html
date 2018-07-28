@@ -40,7 +40,9 @@
     </div>
   </nav>
   <script type="text/javascript">
-    document.getElementById("Navbar-UserName").innerHTML = Cookies.NickName;
+    const userName = document.getElementById("Navbar-UserName");
+    userName.innerHTML = Cookies.Phone ? Cookies.NickName : "Login";
+    userName.href = Cookies.Phone ? "/profile/"+Cookies.Phone : "/SignIn";
     async function LoadLines() {
       const List = document.getElementById("Navbar-LineList");
       if (List.load) {

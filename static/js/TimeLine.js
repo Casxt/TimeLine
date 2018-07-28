@@ -7,7 +7,7 @@ Object.defineProperty(window, "Cookies", {
     get: function () {
         return document.cookie.split("; ").reduce(function (cookies, cookie) {
             const cookieitem = cookie.split("=");
-            cookies[cookieitem[0]] = unescape(cookieitem[1]);
+            cookies[cookieitem[0]] = unescape(decodeURI(cookieitem[1]));
             return cookies
         }, {});
     }

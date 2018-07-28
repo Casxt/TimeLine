@@ -5,8 +5,10 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"html"
 	"math/big"
 	"net/http"
+	"net/url"
 	"regexp"
 
 	"github.com/Casxt/TimeLine/database"
@@ -257,8 +259,10 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	session.Put("ID", ID, 60*60*24*30)
 	session.Put("NickName", NickName, 60*60*24*30)
 	session.Put("Phone", Phone, 60*60*24*30)
+	//Escape, Phone is pure number and no need to escape
 	http.SetCookie(res, &http.Cookie{Name: "Phone", Value: Phone, Path: "/", MaxAge: 30 * 86400})
-	http.SetCookie(res, &http.Cookie{Name: "NickName", Value: NickName, Path: "/", MaxAge: 30 * 86400})
+	http.SetCookie(res, &http.Cookie{Name: "NickName", Value: html.EscapeString(url.QueryEscape(NickName)), Path: "/", MaxAge: 30 * 86400})
+
 	return 200, map[string]string{
 		"State": "Success",
 		"Msg":   "Sign In Success",
