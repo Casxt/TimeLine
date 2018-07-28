@@ -5,6 +5,8 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Casxt/TimeLine/components/index"
+
 	"github.com/Casxt/TimeLine/api"
 	"github.com/Casxt/TimeLine/components/image"
 	"github.com/Casxt/TimeLine/components/line"
@@ -35,7 +37,7 @@ func route(res http.ResponseWriter, req *http.Request) {
 	case strings.HasPrefix(strings.ToLower(path), "/profile"):
 		profile.Route(res, req)
 	default:
-		res.Write([]byte("TimeLine!"))
+		index.Route(res, req)
 	}
 }
 
