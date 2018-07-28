@@ -178,9 +178,9 @@
                         Users: LineInfo.Users,
                         SliceNum: LineInfo.SliceNum,
                         ImageNum: LineInfo.ImageNum,
-                        LastUpdateTime: FormtTime(LineInfo.LatestTime),
+                        LastUpdateTime: FormatTime(LineInfo.LatestTime),
                         CanvasName: "Line-Canvas-" + Line,
-                        CreateTime: FormtTime(LineInfo.CreateTime),
+                        CreateTime: FormatTime(LineInfo.CreateTime),
                     });
                     await GetLatestSlice("Line-Canvas-" + Line, Line, LineInfo.LatestImg);
                 } else {
