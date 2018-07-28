@@ -7,14 +7,17 @@
                     value="Memory">Memory</button>
                 <button id="Anniversary-Button" type="button" class="btn btn-outline-secondary" onclick="ToggleSliceType(this)" value="Anniversary">Anniversary</button>
                 <div class="btn-group" role="group">
-                    <button id="Visibility" name="Visibility" type="button" class="btn btn-outline-secondary dropdown-toggle" style="border-top-right-radius: 0;"
+                    <button id="Vis-DropButton" type="button" class="btn btn-outline-secondary dropdown-toggle" style="border-top-right-radius: 0;"
                         data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" value="Protect">
                         Group
                     </button>
                     <div class="dropdown-menu" aria-labelledby="Visibility">
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Protect';document.getElementById('Visibility').innerHTML=this.innerHTML;">Group</a>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Public';document.getElementById('Visibility').innerHTML=this.innerHTML;">All</a>
-                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Private';document.getElementById('Visibility').innerHTML=this.innerHTML;">Self</a>
+                        <a class="dropdown-item" href="#" 
+                        onclick="document.getElementById('Visibility').value='Protect';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">Group</a>
+                        <a class="dropdown-item" href="#" 
+                        onclick="document.getElementById('Visibility').value='Public';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">All</a>
+                        <a class="dropdown-item" href="#" 
+                        onclick="document.getElementById('Visibility').value='Private';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">Self</a>
                     </div>
                 </div>
             </div>
@@ -27,6 +30,7 @@
                     <label class="custom-file-label" for="images"></label>
                 </div>
 
+                <input id="Visibility" name="Visibility" type="hidden" value="Protect">
                 <input id="Type" name="Type" type="hidden" value="Memory">
                 <input id="Latitude" name="Latitude" type="hidden" value="0">
                 <input id="Longitude" name="Longitude" type="hidden" value="0">
