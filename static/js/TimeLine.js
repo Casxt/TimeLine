@@ -71,17 +71,17 @@ String format Space Start
  * @param {*} args 
  */
 String.prototype.format = function (args) {
-    
+
     let result = this;
     if (arguments.length > 0) {
         if (arguments.length == 1 && typeof (args) == "object") {
             for (const key in args) {
                 if (args[key] != undefined) {
-                    result = result.replace(RegExp("{" + key + "}","g"), args[key]);
+                    result = result.replace(RegExp("{" + key + "}", "g"), args[key]);
                 }
             }
         } else {
-            for (let i  = 0; i < arguments.length; i++) {
+            for (let i = 0; i < arguments.length; i++) {
                 if (arguments[i] != undefined) {　　　　　　　　　　　　
                     const reg = new RegExp("({)" + i + "(})", "g");
                     result = result.replace("{" + i + "}", arguments[i]);
@@ -93,8 +93,8 @@ String.prototype.format = function (args) {
 }
 
 
-function FormatTime(TimeStr){
-    return TimeStr.replace("T"," ").replace("Z","")
+function FormatTime(TimeStr) {
+    return TimeStr.replace("T", " ").replace("Z", "")
 }
 
 class AnimeButton {
@@ -103,7 +103,7 @@ class AnimeButton {
             this.buttonId = buttonId;
             this.button = document.getElementById(buttonId);
             this.jqButton = $("#" + buttonId);
-        }else if (Object.prototype.toString.call(buttonId) == "[object HTMLButtonElement]"){
+        } else if (Object.prototype.toString.call(buttonId) == "[object HTMLButtonElement]") {
             this.buttonId = null;
             this.button = buttonId;
             this.jqButton = $(buttonId);

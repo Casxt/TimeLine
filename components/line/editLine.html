@@ -1,29 +1,43 @@
 <link rel="stylesheet" href="/static/css/croppie.min.css" type="text/css">
 <script src="/static/js/croppie.min.js"></script>
 <main>
-    <div id="LineCard" class="card">
-        <img id="{CanvasName}" class="card-img-top rounded">
-        <div class="card-body">
-            <h5 class="card-title">{LineName}</h5>
-            <small>SliceNum:
-                <span class="badge badge-info">{SliceNum}</span>
-            </small>
-            <br>
-            <small>ImageNum:
-                <span class="badge badge-info">{ImageNum}</span>
-            </small>
-            <br>
-            <small>Users:
-                <span class="badge badge-info">{Users}</span>
-                <span class="badge badge-info">
-                    <strong>+</strong>
-                </span>
-            </small>
+    <!--<img id="{CanvasName}" class="card-img-top rounded">-->
+
+    <div id="LineCard" class="m-4">
+        <h1 class="display-4 shadow p-3 m-1 mb-5 bg-dark text-white rounded">{LineName}</h1>
+
+        <div class="row p-3 mb-2">
+            <div class="shadow p-3 m-1 mb-2 bg-secondary text-white rounded col">
+                <p>
+                    <strong>ImageUsage</strong>
+                </p>
+                <div class="progress">
+                    <div class="progress-bar text-dark" role="progressbar" style="width: {ImgUseRate}%;">
+                        {ImageNum}/{TotalImg}
+                    </div>
+                </div>
+            </div>
+            <div class="shadow p-3 m-1 mb-2 bg-info text-white rounded col">
+                <p>
+                    <strong>SliceRate</strong>
+                </p>
+                <div class="progress">
+                    <div class="progress-bar" role="progressbar" style="width: 25%;">
+                        {Users}({UserSlice}/{SliceNum})
+                    </div>
+                </div>
+            </div>
         </div>
-        <div class="card-footer">
-            <small class="text-muted">Create@{CreateTime}</small>
-            <br>
-            <small class="text-muted">LatestUpdate@{LastUpdateTime}</small>
+        <div class="shadow p-3 m-1 mb-2 bg-light text-dark rounded">
+            Users:&nbsp;{userString}
+            <span class="badge badge-info" data-toggle="modal" data-target="#AddUser-Modal">
+                <strong>+</strong>
+            </span>
+
+        </div>
+        <div class="shadow p-3 m-1 mb-2 bg-primary text-white rounded">
+            <p>Create@{CreateTime}</p>
+            <p>LatestUpdate@{LastUpdateTime}</p>
         </div>
     </div>
     <div class="card">
@@ -32,9 +46,42 @@
             <p class="card-text">With supporting text below as a natural lead-in to additional content.</p>
         </div>
     </div>
+
+    <!--Add User Modal-->
+    <div id="AddUser-Modal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New User</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <label for="AddUser-Phone">Phone</label>
+                            <input type="phonenumber" class="form-control" id="AddUser-Phone" name="UserPhone" placeholder="Phone" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="AddUser-NickName">NickName</label>
+                            <input type="text" class="form-control" id="AddUser-NickName" name="NickName" placeholder="NickName" required>
+                            <small class="form-text text-muted">To Check if phone and NickName is match</small>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button id="AddUser-Submit" type="button" class="btn btn-primary">Submit</button>
+                </div>
+            </div>
+        </div>
+    </div>
 </main>
 <script type="text/javascript">
 
+    /**
+    * Get Url
+    */
     const re = /^https?:\/\/\S+?\/lineedit\/([^/^#^\?^\s]+)/g;
     const LineName = re.exec(window.location.href.toLowerCase())[1];
 
@@ -44,8 +91,7 @@
             const y = Math.round(this.height / 2);
             const x = Math.round(this.width / 2);
             const d = y > x ? x : y;
-
-            let canvas = document.createElement("canvas");
+            const canvas = document.createElement("canvas");
             canvas.width = 2 * d;
             canvas.height = 2 * d;
             canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, 2 * d,
@@ -53,7 +99,6 @@
             document.getElementById(CanvasName).src = canvas.toDataURL("image/jpeg");
         }
         img.src = "/image/" + LatestImg;
-
     }
 
     async function GetLineInfo(Line) {
@@ -61,17 +106,23 @@
             Operator: Cookies.Phone,
             SessionID: Cookies.SessionID,
         }
-
         Data.LineName = Line;
         const LineCard = document.getElementById("LineCard");
         LineInfo = await JsonRequest('POST', '/api/GetLineInfo', Data);
         if (LineInfo.State == "Success") {
-            
+            let userString = ""
+            for (const u of LineInfo.Users) {
+                userString += "<span class=\"badge badge-info\">" + u + "</span>&nbsp;";
+            }
+            //TODO: TotalImg
             LineCard.innerHTML = LineCard.innerHTML.format({
                 LineName: Line,
-                Users: LineInfo.Users,
-                SliceNum: LineInfo.SliceNum,
+                Users: Cookies.NickName,
                 ImageNum: LineInfo.ImageNum,
+                TotalImg: 1000,
+                ImgUseRate: LineInfo.ImageNum / 1000 * 100,
+                userString: userString,
+                SliceNum: LineInfo.SliceNum,
                 LastUpdateTime: FormatTime(LineInfo.LatestTime),
                 CanvasName: "Line-Canvas-" + Line,
                 CreateTime: FormatTime(LineInfo.CreateTime),
