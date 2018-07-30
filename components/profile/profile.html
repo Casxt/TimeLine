@@ -96,7 +96,9 @@
         <div class="card">
             <img id="{CanvasName}" class="card-img-top rounded">
             <div class="card-body">
-                <h5 class="card-title"><a href="/lineedit/{LineName}">{LineName}</a></h5>
+                <h5 class="card-title">
+                    <a href="/lineedit/{LineName}">{LineName}</a>
+                </h5>
                 <small>SliceNum:
                     <span class="badge badge-info">{SliceNum}</span>
                 </small>
@@ -105,10 +107,9 @@
                     <span class="badge badge-info">{ImageNum}</span>
                 </small>
                 <br>
-                <small>Users:
-                        {UserString}
+                <small>Users: {UserString}
                     <span class="badge badge-info" onclick="location.href='/lineedit/{LineName}';">
-                            <strong>+</strong>
+                        <strong>+</strong>
                     </span>
                 </small>
             </div>
@@ -195,13 +196,13 @@
                 LineInfo = await JsonRequest('POST', '/api/GetLineInfo', Data);
                 let userString = "";
                 for (const user of LineInfo.Users) {
-                    userString += "<span class=\"badge badge-info\">"+user+"</span>&nbsp;";
+                    userString += "<span class=\"badge badge-info\">" + user + "</span>&nbsp;";
                 }
                 if (LineInfo.State == "Success") {
                     document.getElementById("LineCard").innerHTML = Templete.format({
                         LineName: Line,
                         Users: LineInfo.Users,
-                        UserString:userString,
+                        UserString: userString,
                         SliceNum: LineInfo.SliceNum,
                         ImageNum: LineInfo.ImageNum,
                         LastUpdateTime: FormatTime(LineInfo.LatestTime),
@@ -281,4 +282,22 @@
             B.Alert("btn-warning btn ml-1 mt-2", ResJson.Msg, 3000);
         }
     }
+
+    async function CreateLine() {
+        const formData = new FormData(document.getElementById("CreateLine-Form"));
+        let Data = formData.ToArray();
+        Data.SessionID = Cookies.SessionID;
+        Data.Operator = Cookies.Phone;
+        const B = new AnimeButton("CreateLine-Button");
+        const Closer = B.OnLoding("disabled", "Checking...");
+
+        const json = await JsonRequest('POST', '/api/CreateLine', Data);
+
+        if (json.State == "Success") {
+            Closer();
+        } else {
+            Closer();
+            B.Alert("btn-warning btn btn-lg btn-block mt-5 disabled", json.Msg, 3000);
+        }
+    };
 </script>
