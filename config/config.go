@@ -6,18 +6,28 @@ import (
 	"log"
 )
 
+//TLS config struct
+type TLSStrut struct {
+	Cert string
+	Key  string
+}
+
 //ConfigStrut decide struct of config
 type ConfigStrut struct {
 	Sql         SqlConfig
 	ProjectPath string
+	TLS         TLSStrut
 }
 
 var configStrut ConfigStrut
 
 //Sql contain sql config
 //Using in database
-var Sql SqlConfig
-var ProjectPath string
+var (
+	Sql         SqlConfig
+	ProjectPath string
+	TLS         TLSStrut
+)
 
 //Load Config file
 func Load(file string) {
@@ -32,4 +42,5 @@ func Load(file string) {
 	}
 	Sql = configStrut.Sql
 	ProjectPath = configStrut.ProjectPath
+	TLS = configStrut.TLS
 }

@@ -24,6 +24,17 @@ func main() {
 	mux := http.NewServeMux()
 	mux.Handle("/", http.HandlerFunc(route))
 
-	log.Println("Listening...")
-	http.ListenAndServe(":80", mux)
+	if config.TLS.Cert != "" && config.TLS.Key != "" {
+		log.Println("TLS Enable")
+		log.Println("Start Https Server @ 443 ...")
+		if err := http.ListenAndServeTLS(":443", config.TLS.Cert, config.TLS.Key, mux); err != nil {
+			log.Fatalln(err.Error())
+		}
+	} else {
+		log.Println("TLS Disable")
+		log.Println("Start Http Server @ 80 ...")
+		if err := http.ListenAndServe(":80", mux); err != nil {
+			log.Fatalln(err.Error())
+		}
+	}
 }
