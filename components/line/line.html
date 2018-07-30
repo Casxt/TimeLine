@@ -147,7 +147,7 @@
             latitudeInput.value = location.coords.latitude; //纬度
             longitudeInput.value = location.coords.longitude; //经度
         }, (err) => {
-            console.warn('ERROR(' + err.code + '): ' + err.message);
+            console.warn('Loaction Error(' + err.code + '): ' + err.message);
         }, {
                 enableHighAccuracy: true,
                 timeout: 3000,
