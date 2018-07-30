@@ -194,10 +194,16 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 
 //AddUser will will add user to specific line
 func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
-	type Data struct {
-		Operator  string `json:"Operator"`
-		Name      string `json:"Name"`
-		UserPhone string `json:"UserPhone"`
+	type ReqData struct {
+		Operator  string
+		SessionID string
+		LineName  string
+		NickName  string
+		UserPhone string
+	}
+	type ResData struct {
+		State string
+		Msg   string
 	}
 
 	return 400, map[string]string{
