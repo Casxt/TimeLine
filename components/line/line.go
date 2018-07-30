@@ -109,9 +109,9 @@ func GetLineInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 			"Msg":   "User Not Sign In",
 		}
 	}
-	_, resData.Name, resData.LatestImg, resData.Users, resData.SliceNum, resData.ImageNum, resData.CreateTime, resData.LatestTime, err = database.GetLineDetail(reqData.LineName, nil)
+	_, resData.Name, resData.LatestImg, resData.Users, resData.SliceNum, resData.ImageNum,
+		resData.CreateTime, resData.LatestTime, err = database.GetLineDetail(reqData.LineName, nil)
 	if err != nil {
-		log.Println(err.Error())
 		return 500, map[string]string{
 			"State":  "Failde",
 			"Msg":    "Get Line Info Failed",

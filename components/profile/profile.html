@@ -2,7 +2,7 @@
 <script src="/static/js/croppie.min.js"></script>
 <main>
     <div class="row m-1">
-        <div class="col-sm-4 mb-3">
+        <div class="col-sm-3 mb-3">
             <div class="card">
                 <img id="ProfilePic" class="card-img-top" src="" data-toggle="modal" data-target="#PPU-Modal">
                 <div class="card-body">
@@ -15,7 +15,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-sm-8 container">
+        <div class="col-sm-9 container">
             <nav>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-ite>m">
@@ -24,7 +24,7 @@
                 </ol>
             </nav>
             <div id="LineCard" class="card-group mb-4">
-                <div class="card">
+                <div id="CreateLine-Card" class="card">
                     <img id="{CanvasName}" class="card-img-top rounded">
                     <div class="card-body">
                         <h5 class="card-title">Create New Line</h5>
@@ -190,13 +190,18 @@
         }
         const Res = await JsonRequest('POST', '/api/GetLines', Data);
         const Templete = document.getElementById("LineCardTemplete").innerHTML;
+        if (Res.Lines.length > 2){
+            document.getElementById("CreateLine-Card").hidden="hidden";
+        }
         if (Res.State = "Success" && Res.Lines.length > 0) {
             for (const Line of Res.Lines) {
                 Data.LineName = Line;
                 LineInfo = await JsonRequest('POST', '/api/GetLineInfo', Data);
                 let userString = "";
-                for (const user of LineInfo.Users) {
-                    userString += "<span class=\"badge badge-info\">" + user + "</span>&nbsp;";
+                if (LineInfo.Users) {
+                    for (const user of LineInfo.Users) {
+                        userString += "<span class=\"badge badge-info\">" + user + "</span>&nbsp;";
+                    }
                 }
                 if (LineInfo.State == "Success") {
                     document.getElementById("LineCard").innerHTML = Templete.format({
@@ -295,6 +300,7 @@
 
         if (json.State == "Success") {
             Closer();
+            location.reload();
         } else {
             Closer();
             B.Alert("btn-warning btn btn-lg btn-block mt-5 disabled", json.Msg, 3000);

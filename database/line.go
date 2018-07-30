@@ -115,10 +115,11 @@ func GetLineDetail(LineName string, course *sql.Tx) (LineID, Name, LatestImg str
 			"LineID" = ?`
 	row := course.QueryRow(strings.Replace(sqlCmd, `"`, "`", -1), LineID)
 	if DBErr = row.Scan(&imgNum, &SliceNum, &latestTime); DBErr != nil {
+		log.Println("GetLineDetail-sql1", DBErr.Error())
 		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 	}
 	if latestTime == nil {
-		latestTime = new(time.Time)
+		latestTime = &CreateTime
 	}
 	LatestTime = *latestTime
 	if imgNum == nil {
@@ -143,6 +144,7 @@ func GetLineDetail(LineName string, course *sql.Tx) (LineID, Name, LatestImg str
 	for rows.Next() {
 		var user string
 		if DBErr = rows.Scan(&user); DBErr != nil {
+			log.Println("GetLineDetail-sql2", DBErr.Error())
 			return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 		}
 		Users = append(Users, user)
@@ -162,7 +164,13 @@ func GetLineDetail(LineName string, course *sql.Tx) (LineID, Name, LatestImg str
 		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 	}
 
-	if DBErr = row.Scan(&LatestImg); DBErr != nil {
+	switch DBErr = row.Scan(&LatestImg); {
+	case DBErr == nil:
+	case DBErr.Error() == "sql: no rows in result set":
+		LatestImg = ""
+		DBErr = nil
+	default:
+		log.Println("GetLineDetail-sql3", DBErr.Error())
 		return "", "", "", nil, 0, 0, time.Time{}, time.Time{}, DBErr
 	}
 	LatestImg = strings.Split(LatestImg, ",")[0]
