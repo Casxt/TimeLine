@@ -12,12 +12,9 @@
                         Group
                     </button>
                     <div class="dropdown-menu" aria-labelledby="Visibility">
-                        <a class="dropdown-item" href="#" 
-                        onclick="document.getElementById('Visibility').value='Protect';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">Group</a>
-                        <a class="dropdown-item" href="#" 
-                        onclick="document.getElementById('Visibility').value='Public';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">All</a>
-                        <a class="dropdown-item" href="#" 
-                        onclick="document.getElementById('Visibility').value='Private';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">Self</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Protect';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">Group</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Public';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">All</a>
+                        <a class="dropdown-item" href="#" onclick="document.getElementById('Visibility').value='Private';document.getElementById('Vis-DropButton').innerHTML=this.innerHTML;">Self</a>
                     </div>
                 </div>
             </div>
@@ -35,10 +32,10 @@
 
                 <button class="btn btn-primary m-1 col" id="AddSlice-Button" type="button" onclick="SubmitSlice()">Submit</button>
 
-                <input id="Visibility" name="Visibility" type="hidden" value="Protect" hidden>
-                <input id="Type" name="Type" type="hidden" value="Memory" hidden>
-                <input id="Latitude" name="Latitude" type="hidden" value="0" hidden>
-                <input id="Longitude" name="Longitude" type="hidden" value="0" hidden>
+                <input id="Visibility" name="Visibility" type="hidden" value="Protect">
+                <input id="Type" name="Type" type="hidden" value="Memory">
+                <input id="Latitude" name="Latitude" type="hidden" value="0">
+                <input id="Longitude" name="Longitude" type="hidden" value="0">
             </div>
         </form>
         <div class="container mb-3" id="preview">
@@ -144,11 +141,18 @@
         const offset = new Date();
         const now = new Date(offset.getTime() - offset.getTimezoneOffset() * 60000);
         TimeInput.value = now.toISOString().slice(0, 16);
+
         navigator.geolocation.getCurrentPosition((location) => {
-            console.log(location.coords.latitude);
+            //console.log(location.coords.latitude);
             latitudeInput.value = location.coords.latitude; //纬度
             longitudeInput.value = location.coords.longitude; //经度
-        });
+        }, (err) => {
+            console.warn('ERROR(' + err.code + '): ' + err.message);
+        }, {
+                enableHighAccuracy: true,
+                timeout: 3000,
+                maximumAge: 0
+            });
     };
     updateInfo();
     const cancleHandle = setInterval(updateInfo, 60 * 1000);
