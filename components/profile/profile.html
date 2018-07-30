@@ -24,6 +24,19 @@
                 </ol>
             </nav>
             <div id="LineCard" class="card-group mb-4">
+                <div class="card">
+                    <img id="{CanvasName}" class="card-img-top rounded">
+                    <div class="card-body">
+                        <h5 class="card-title">Create New Line</h5>
+                        <form id="CreateLine-Form">
+                            <div class="form-group">
+                                <label for="CreateLine-LineName">LineName</label>
+                                <input type="text" id="CreateLine-LineName" name="LineName" class="form-control" placeholder="LineName" required>
+                            </div>
+                            <button id="CreateLine-Button" class="btn-primary btn btn-block mt-5" type="button" onclick="CreateLine()">Create</button>
+                        </form>
+                    </div>
+                </div>
             </div>
             <nav>
                 <ol class="breadcrumb">
@@ -83,7 +96,7 @@
         <div class="card">
             <img id="{CanvasName}" class="card-img-top rounded">
             <div class="card-body">
-                <h5 class="card-title">{LineName}</h5>
+                <h5 class="card-title"><a href="/lineedit/{LineName}">{LineName}</a></h5>
                 <small>SliceNum:
                     <span class="badge badge-info">{SliceNum}</span>
                 </small>
@@ -93,7 +106,10 @@
                 </small>
                 <br>
                 <small>Users:
-                    <span class="badge badge-info">{Users}</span> <span class="badge badge-info"><strong>+</strong></span>
+                        {UserString}
+                    <span class="badge badge-info" onclick="location.href='/lineedit/{LineName}';">
+                            <strong>+</strong>
+                    </span>
                 </small>
             </div>
             <div class="card-footer">
@@ -177,16 +193,21 @@
             for (const Line of Res.Lines) {
                 Data.LineName = Line;
                 LineInfo = await JsonRequest('POST', '/api/GetLineInfo', Data);
+                let userString = "";
+                for (const user of LineInfo.Users) {
+                    userString += "<span class=\"badge badge-info\">"+user+"</span>&nbsp;";
+                }
                 if (LineInfo.State == "Success") {
-                    document.getElementById("LineCard").innerHTML += Templete.format({
+                    document.getElementById("LineCard").innerHTML = Templete.format({
                         LineName: Line,
                         Users: LineInfo.Users,
+                        UserString:userString,
                         SliceNum: LineInfo.SliceNum,
                         ImageNum: LineInfo.ImageNum,
                         LastUpdateTime: FormatTime(LineInfo.LatestTime),
                         CanvasName: "Line-Canvas-" + Line,
                         CreateTime: FormatTime(LineInfo.CreateTime),
-                    });
+                    }) + document.getElementById("LineCard").innerHTML;
                     await GetLatestSlice("Line-Canvas-" + Line, Line, LineInfo.LatestImg);
                 } else {
 
