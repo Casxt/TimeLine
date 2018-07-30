@@ -70,7 +70,7 @@
           <a id="Navbar-UserName" class="nav-link">Lines</a>
         </li>
         <li class="nav-item dropdown">
-          <a class="nav-link dropdown-toggle" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="LoadLines()">YourLines</a>
+          <a class="nav-link dropdown-toggle" href="#" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" onclick="LoadLines()">YourLines</a>
           <div id="Navbar-LineList" class="dropdown-menu" load="false">
             <!--<a class="dropdown-item" href="#">Loading...</a>-->
           </div>
@@ -112,8 +112,9 @@
       List.innerHTML = '<a class="dropdown-item" href="">Loading...</a>';
       const Res = await JsonRequest('POST', '/api/GetLines', Data);
       let listHtml = "";
-      if (Res.Lines == undefined) {
+      if (!Res.Lines) {
         List.innerHTML = '<a class="dropdown-item" href="/SignIn">Need Sign IN</a>';
+        return;
       }
       for (const line of Res.Lines) {
         listHtml += '<a class="dropdown-item" href="{Herf}">{Name}</a>'.format({
