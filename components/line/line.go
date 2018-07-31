@@ -206,10 +206,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes in
 		Detail string
 	}
 
-	var (
-		reqData ReqData
-		err     error
-	)
+	var reqData ReqData
 
 	if status, jsonRes = tools.GetPostJSON(req, &reqData); status != 200 {
 		return status, jsonRes
@@ -224,7 +221,14 @@ func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes in
 	}
 	//Check if user belong to line
 	var contain bool
-	lines, err := database.GetLines(UserID)
+	lines, DBErr := database.GetLines(UserID)
+	if DBErr != nil {
+		return 500, ResData{
+			State: "Failde",
+			Msg:   "GetLines failed",
+		}
+	}
+
 	for _, line := range lines {
 		if line == reqData.LineName {
 			contain = true
@@ -244,7 +248,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes in
 		return 500, ResData{
 			State:  "Failde",
 			Msg:    "Get GetUserByPhone Failed",
-			Detail: err.Error(),
+			Detail: DBErr.Error(),
 		}
 	}
 
@@ -259,7 +263,7 @@ func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes in
 		return 500, ResData{
 			State:  "Failde",
 			Msg:    "AddUser Failed",
-			Detail: err.Error(),
+			Detail: DBErr.Error(),
 		}
 	}
 

@@ -38,6 +38,8 @@ func Route(res http.ResponseWriter, req *http.Request) {
 		resCode, jsonRes = line.GetLines(res, req)
 	case strings.HasPrefix(subPath, "/GetLineInfo"):
 		resCode, jsonRes = line.GetLineInfo(res, req)
+	case strings.HasPrefix(subPath, "/AddUser"):
+		resCode, jsonRes = line.AddUser(res, req)
 		//Profile Api
 	case strings.HasPrefix(subPath, "/ProfilePicture"):
 		resCode, jsonRes = profile.UpdateProfilePic(res, req)

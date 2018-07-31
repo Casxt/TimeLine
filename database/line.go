@@ -178,7 +178,7 @@ func GetLineDetail(LineName string, course *sql.Tx) (LineID, Name, LatestImg str
 }
 
 //AddUser add a User to line
-func AddUser(LineName, userID string, course *sql.Tx) (DBErr error) {
+func AddUser(LineName, UserID string, course *sql.Tx) (DBErr error) {
 	course, selfCourse, DBErr := Begin(course)
 	if DBErr != nil {
 		log.Println(DBErr.Error())
@@ -188,14 +188,14 @@ func AddUser(LineName, userID string, course *sql.Tx) (DBErr error) {
 
 	const SQLCmd string = `
 	INSERT INTO "Group" ( "Group"."LineID", "Group"."UserID" ) SELECT
-		"Line"."ID" , ?
+		"ID" , ?
 	FROM
 		"Line"
 	WHERE
-		"Line"."Name" = ?
+		Name" = ?
 	`
 	var res sql.Result
-	res, DBErr = course.Exec(strings.Replace(SQLCmd, `"`, "`", -1), userID, LineName)
+	res, DBErr = course.Exec(strings.Replace(SQLCmd, `"`, "`", -1), UserID, LineName)
 	switch {
 	case DBErr == nil:
 	case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):

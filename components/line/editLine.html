@@ -56,7 +56,7 @@
                     </button>
                 </div>
                 <div class="modal-body">
-                    <form>
+                    <form id="AddUser-Form">
                         <div class="form-group">
                             <label for="AddUser-Phone">Phone</label>
                             <input type="phonenumber" class="form-control" id="AddUser-Phone" name="UserPhone" placeholder="Phone" required>
@@ -71,6 +71,25 @@
                 <div class="modal-footer">
                     <button id="AddUser-Submit" type="button" class="btn btn-primary">Submit</button>
                 </div>
+                <script type="text/javascript">
+                    async function AddUser(btn) {
+                        const formData = new FormData(document.getElementById("CreateLine-Form"));
+                        let Data = formData.ToArray();
+                        Data.SessionID = Cookies.SessionID;
+                        Data.Operator = Cookies.Phone;
+                        const B = new AnimeButton(btn);
+                        const Closer = B.OnLoding("disabled", "Adding...");
+                        const json = await JsonRequest('POST', '/api/AddUser', Data);
+
+                        if (json.State == "Success") {
+                            Closer();
+                            B.Alert("btn-Success btn", json.Msg, 3000);
+                        } else {
+                            Closer();
+                            B.Alert("btn-warning btn", json.Msg, 3000);
+                        }
+                    }
+                </script>
             </div>
         </div>
     </div>
@@ -82,22 +101,6 @@
     */
     const re = /^https?:\/\/\S+?\/lineedit\/([^/^#^\?^\s]+)/g;
     const LineName = re.exec(window.location.href.toLowerCase())[1];
-
-    async function GetLatestSlice(CanvasName, LineName, LatestImg) {
-        let img = new Image();
-        img.onload = function () {
-            const y = Math.round(this.height / 2);
-            const x = Math.round(this.width / 2);
-            const d = y > x ? x : y;
-            const canvas = document.createElement("canvas");
-            canvas.width = 2 * d;
-            canvas.height = 2 * d;
-            canvas.getContext("2d").drawImage(this, x - d, y - d, 2 * d, 2 * d, 0, 0, 2 * d,
-                2 * d);
-            document.getElementById(CanvasName).src = canvas.toDataURL("image/jpeg");
-        }
-        img.src = "/image/" + LatestImg;
-    }
 
     async function GetLineInfo(Line) {
         let Data = {
