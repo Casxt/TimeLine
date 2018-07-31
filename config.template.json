@@ -1,0 +1,14 @@
+{
+    "SQL":{
+        "Host":"example.com",
+        "Port":"3306",
+        "User":"TimeLineUser",
+        "Pass":"TimeLinePass",
+        "Base":"TimeLineBase"
+    },
+    "TLS":{
+        "Cert":"/etc/cert.pem",
+        "Key":"/etc/key.pem"
+    },
+    "ProjectPath":"/website/TimeLine"
+}

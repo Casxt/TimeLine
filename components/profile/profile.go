@@ -85,12 +85,12 @@ func GetUserInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 	type ResData struct {
 		State      string
 		Msg        string
-		NickName   string
-		Phone      string
-		Mail       string
-		Gender     string
-		ProfilePic string
-		SignInTime time.Time
+		NickName   string    //昵称
+		Phone      string    //手机
+		Mail       string    //邮箱
+		Gender     string    //性别
+		ProfilePic string    //头像
+		SignInTime time.Time //注册时间
 	}
 	var (
 		reqData ReqData
@@ -130,7 +130,7 @@ func ChangeNickName(res http.ResponseWriter, req *http.Request) (status int, jso
 	type ReqData struct {
 		SessionID string
 		Operator  string
-		NewName   string
+		NewName   string //新昵称
 	}
 	type ResData struct {
 		State string

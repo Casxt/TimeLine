@@ -11,13 +11,13 @@ import (
 
 //SliceInfo struct use in GetSlice func
 type SliceInfo struct {
-	UserName   string
-	Gallery    []string
-	Content    string
-	Type       string
-	Visibility string
-	Location   string
-	Time       time.Time
+	UserName   string    //创建者昵称
+	Gallery    []string  //附带图片
+	Content    string    //附带文字
+	Type       string    //类型
+	Visibility string    //查看权限
+	Location   string    //定位
+	Time       time.Time //记录时间
 }
 
 //GetSlices Get Slice List

@@ -32,9 +32,9 @@ func Route(res http.ResponseWriter, req *http.Request) {
 func SignUp(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 
 	type Data struct {
-		Phone    string `json:"Phone"`
-		Mail     string `json:"Mail"`
-		HashPass string `json:"HashPass"`
+		Phone    string
+		Mail     string
+		HashPass string
 	}
 	var data Data
 

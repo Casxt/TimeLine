@@ -14,8 +14,8 @@ func GetSlices(res http.ResponseWriter, req *http.Request) (status int, jsonRes 
 	type Data struct {
 		SessionID string
 		Operator  string
-		LineName  string
-		PageNum   int
+		LineName  string //Line名
+		PageNum   int    //页数，每页20条
 	}
 	type SlicesInfo struct {
 		State  string
@@ -61,16 +61,16 @@ func AddSlice(res http.ResponseWriter, req *http.Request) (status int, jsonRes m
 	//var err error
 	//Title      string   `json:"LineName"`
 	type Data struct {
-		Operator   string
-		LineName   string
-		Content    string
-		Gallery    []string
-		Type       string
-		Visibility string
-		Longitude  string //精度
-		Latitude   string //纬度
-		Time       string
-		SessionID  string
+		Operator   string   //用户手机
+		LineName   string   //要添加到的Line名字
+		Content    string   //Slice的文字内容
+		Gallery    []string //Slice的附带图片
+		Type       string   //种类，回忆还是纪念日
+		Visibility string   //查看权限，自己可见，同Line可见，公开
+		Longitude  string   //精度
+		Latitude   string   //纬度
+		Time       string   //记录时间
+		SessionID  string   //SessionID
 	}
 	var data Data
 

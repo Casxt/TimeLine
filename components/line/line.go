@@ -40,7 +40,7 @@ func GetLines(res http.ResponseWriter, req *http.Request) (status int, jsonRes i
 	type ResData struct {
 		State string
 		Msg   string
-		Lines []string
+		Lines []string //全部Line名称
 	}
 	var reqData ReqData
 
@@ -126,9 +126,9 @@ func GetLineInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 //CreateLine will create a new line with specific name
 func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	type Data struct {
-		Operator  string
-		LineName  string
-		SessionID string
+		Operator  string //当前登陆用户的手机
+		LineName  string //Line的名字
+		SessionID string //当前SessionID
 	}
 	var data Data
 
@@ -194,11 +194,11 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 //AddUser will will add user to specific line
 func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
 	type ReqData struct {
-		Operator  string
-		SessionID string
-		LineName  string
-		NickName  string
-		UserPhone string
+		Operator  string //当前登录用户
+		SessionID string //当前登录用户的SessionID
+		LineName  string //Line名
+		NickName  string //被添加的用户昵称
+		UserPhone string //被添加用户手机
 	}
 	type ResData struct {
 		State  string

@@ -124,8 +124,8 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 //SignIn Will Auth User in a indirect way
 func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	type Data struct {
-		Encrypted string `json:"Encrypted"`
-		IV        string `json:"IV"`
+		Encrypted string //加密后的字符串,16进制字符串
+		IV        string //加密后的IV,16禁止字符串
 	}
 	var data Data
 
@@ -264,7 +264,10 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	http.SetCookie(res, &http.Cookie{Name: "NickName", Value: html.EscapeString(url.QueryEscape(NickName)), Path: "/", MaxAge: 30 * 86400})
 
 	return 200, map[string]string{
-		"State": "Success",
-		"Msg":   "Sign In Success",
+		"State":     "Success",
+		"Msg":       "Sign In Success",
+		"SessionID": session.ID(),
+		"Phone":     Phone,
+		"NickName":  NickName,
 	}
 }
