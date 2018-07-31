@@ -192,7 +192,7 @@ func AddUser(LineName, UserID string, course *sql.Tx) (DBErr error) {
 	FROM
 		"Line"
 	WHERE
-		Name" = ?
+		"Name" = ?
 	`
 	var res sql.Result
 	res, DBErr = course.Exec(strings.Replace(SQLCmd, `"`, "`", -1), UserID, LineName)
