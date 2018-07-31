@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <textarea class="form-control m-2" id="Content" name="Content" rows="3" required></textarea>
+            <textarea class="form-control m-2" id="Content" name="Content" rows="3" onchange="SaveDraft(this.value);" required></textarea>
             <div class="row m-1">
                 <div class="custom-file m-1 col-3 text-truncate">
                     <input name="imgs" type="file" class="custom-file-input" id="images" onchange="preview(this)">
@@ -219,6 +219,7 @@
             B.Alert("btn-warning btn ml-1 mt-2", Slicejson.Msg, 3000);
         }
     }
+
     function ToggleSliceType(btn) {
         let thisButton, otherButton;
         if (btn.id == "Memory-Button") {
@@ -232,4 +233,19 @@
         otherButton.className = "btn btn-outline-secondary";
         document.getElementById("Type").value = btn.value;
     }
+
+    function SaveDraft(text){
+        localStorage.SliceDraft = {
+            SessionID: Cookies.SessionID,
+            Content: text,
+        }
+    }
+
+    function LoadDraft(){
+        if(localStorage.SliceDraft && localStorage.SliceDraft.SessionID == Cookies.SessionID){
+            document.getElementById("Content").value = localStorage.SliceDraft.Content;
+        }
+    }
+
+    LoadDraft();
 </script>
