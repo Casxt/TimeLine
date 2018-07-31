@@ -104,7 +104,7 @@ go bulid
 ```
 ## 启动
 
-1. 将 config.template.json 重命名为 config.json
+1. 将 config.template.json 重命名为 config.json 并打开
 
 2. 将SQL的内容设置为你的数据库配置
 
