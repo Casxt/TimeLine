@@ -213,6 +213,7 @@
         const Slicejson = await JsonRequest('POST', '/api/AddSlice', Data);
         if (Slicejson.State == "Success") {
             Closer();
+            localStorage.removeItem(LineName+"-SliceDraft");
             location.reload();
         } else {
             Closer();
