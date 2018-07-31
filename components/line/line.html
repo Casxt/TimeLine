@@ -19,7 +19,7 @@
                 </div>
             </div>
 
-            <textarea class="form-control m-2" id="Content" name="Content" rows="3" onchange="SaveDraft(this.value);" required></textarea>
+            <textarea class="form-control m-2" id="Content" name="Content" rows="3" oninput="SaveDraft(this.value);" required></textarea>
             <div class="row m-1">
                 <div class="custom-file m-1 col-3 text-truncate">
                     <input name="imgs" type="file" class="custom-file-input" id="images" onchange="preview(this)">
@@ -234,16 +234,22 @@
         document.getElementById("Type").value = btn.value;
     }
 
-    function SaveDraft(text){
-        localStorage.SliceDraft = {
+    function SaveDraft(text) {
+        localStorage[LineName+"-SliceDraft"] = JSON.stringify({
             SessionID: Cookies.SessionID,
             Content: text,
-        }
+        });
     }
 
-    function LoadDraft(){
-        if(localStorage.SliceDraft && localStorage.SliceDraft.SessionID == Cookies.SessionID){
-            document.getElementById("Content").value = localStorage.SliceDraft.Content;
+    function LoadDraft() {
+        if (localStorage[LineName+"-SliceDraft"]) {
+            const draft = JSON.parse(localStorage[LineName+"-SliceDraft"]);
+            if(draft.SessionID == Cookies.SessionID){
+                document.getElementById("Content").value = draft.Content;
+            }else{
+                localStorage.removeItem(LineName+"-SliceDraft");
+            }
+            
         }
     }
 
