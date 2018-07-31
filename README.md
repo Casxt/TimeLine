@@ -153,6 +153,7 @@ go bulid
     State        string //"Success" 成功 "Failed"失败
     Msg          string //成功或失败的相关信息
     Detail       string //更详细的信息，不一定存在此字段
+    //以下字段只在State为"Success"时存在
     NickName     string //昵称
     Salt         string //后续步骤需要使用
     SignInVerify string //后续步骤需要使用
@@ -178,6 +179,8 @@ go bulid
 {
     State     string //"Success" 成功 "Failed"失败
     Msg       string //成功或失败的相关信息
+    Detail    string //更详细的信息，不一定存在此字段
+    //以下字段只在State为"Success"时存在
     SessionID string //登陆成功的SessionID
     Phone     string //用户手机
     NickName  string //用户昵称
@@ -246,10 +249,10 @@ go bulid
     State  string //"Success" 成功 "Failed"失败
     Msg    string //成功或失败的相关信息
     Detail string //更详细的信息，不一定存在此字段
+    //以下字段只在State为"Success"时存在
     Slices []database.SliceInfo //Slice信息数组
 }
-//database.SliceInfo：
-
+/*database.SliceInfo：*/
 {
     UserName   string    //创建者昵称
     Gallery    []string  //附带图片
@@ -276,6 +279,7 @@ go bulid
     State  string   //"Success" 成功 "Failed"失败
     Msg    string   //成功或失败的相关信息
     Detail string   //更详细的信息，不一定存在此字段
+    //以下字段只在State为"Success"时存在
     Lines  []string //全部Line名称
 }
 ```
@@ -334,6 +338,7 @@ go bulid
     State      string //"Success" 成功 "Failed"失败
     Msg        string //成功或失败的相关信息
     Detail     string //更详细的信息，不一定存在此字段
+    //以下字段只在State为"Success"时存在
     NickName   string    //昵称
     Phone      string    //手机
     Mail       string    //邮箱
@@ -374,8 +379,10 @@ POST的Cookie中应包含Operator字段和SessionID字段
 返回格式为json字符串
 ``` golang
 {
-    State string   //"Success" 成功 "Failed"失败
-    Msg   string   //成功或失败的相关信息
-    Hashs []string //图片ID数组
+    State  string   //"Success" 成功 "Failed"失败
+    Msg    string   //成功或失败的相关信息
+    Detail string //更详细的信息，不一定存在此字段
+    //以下字段只在State为"Success"时存在
+    Hashs  []string //图片ID数组
 }
 ```
