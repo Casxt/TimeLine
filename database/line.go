@@ -44,8 +44,7 @@ func CreateLine(LineName, UserID string) error {
 	}
 	defer func() { GraceCommit(course, selfCourse, DBErr) }()
 
-	_, DBErr = course.Exec("INSERT INTO Line (`Name`) VALUES (?)",
-		LineName)
+	_, DBErr = course.Exec("INSERT INTO Line (`Name`) VALUES (?)", LineName)
 	if DBErr != nil {
 		switch {
 		case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):
@@ -176,4 +175,38 @@ func GetLineDetail(LineName string, course *sql.Tx) (LineID, Name, LatestImg str
 	LatestImg = strings.Split(LatestImg, ",")[0]
 
 	return LineID, Name, LatestImg, Users, SliceNum, ImgNum, CreateTime, LatestTime, DBErr
+}
+
+//AddUser add a User to line
+func AddUser(LineName, userID string, course *sql.Tx) (DBErr error) {
+	course, selfCourse, DBErr := Begin(course)
+	if DBErr != nil {
+		log.Println(DBErr.Error())
+		return errors.New("DataBase Connection Error")
+	}
+	defer func() { GraceCommit(course, selfCourse, DBErr) }()
+
+	const SQLCmd string = `
+	INSERT INTO "Group" ( "Group"."LineID", "Group"."UserID" ) SELECT
+		"Line"."ID" , ?
+	FROM
+		"Line"
+	WHERE
+		"Line"."Name" = ?
+	`
+	var res sql.Result
+	res, DBErr = course.Exec(strings.Replace(SQLCmd, `"`, "`", -1), userID, LineName)
+	switch {
+	case DBErr == nil:
+	case strings.HasPrefix(DBErr.Error(), "Error 1062: Duplicate entry"):
+		DBErr = nil
+	default:
+		log.Println("AddUser", DBErr.Error())
+		return DBErr
+	}
+
+	if num, _ := res.RowsAffected(); num == 0 {
+		return errors.New("Not Match")
+	}
+	return nil
 }

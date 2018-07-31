@@ -177,7 +177,6 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 				"State": "Failde",
 				"Msg":   "Line Name Already be Used",
 			}
-
 		default:
 			return 400, map[string]string{
 				"State": "Failde",
@@ -193,7 +192,7 @@ func CreateLine(res http.ResponseWriter, req *http.Request) (status int, jsonRes
 }
 
 //AddUser will will add user to specific line
-func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes interface{}) {
 	type ReqData struct {
 		Operator  string
 		SessionID string
@@ -202,12 +201,70 @@ func AddUser(res http.ResponseWriter, req *http.Request) (status int, jsonRes ma
 		UserPhone string
 	}
 	type ResData struct {
-		State string
-		Msg   string
+		State  string
+		Msg    string
+		Detail string
 	}
 
-	return 400, map[string]string{
-		"State": "Failde",
-		"Msg":   "Invilde Parameter",
+	var (
+		reqData ReqData
+		err     error
+	)
+
+	if status, jsonRes = tools.GetPostJSON(req, &reqData); status != 200 {
+		return status, jsonRes
+	}
+
+	UserID, _ := tools.GetLoginStateOfOperator(req, reqData.SessionID, reqData.Operator)
+	if UserID == "" {
+		return 400, ResData{
+			State: "Failde",
+			Msg:   "User Not Sign In",
+		}
+	}
+	//Check if user belong to line
+	var contain bool
+	lines, err := database.GetLines(UserID)
+	for _, line := range lines {
+		if line == reqData.LineName {
+			contain = true
+			break
+		}
+	}
+	if !contain {
+		return 400, ResData{
+			State: "Failde",
+			Msg:   "User Dose Not Belong to this Line",
+		}
+	}
+
+	//Check User Phone and NickName match
+	UserID, _, nickName, _, _, _, _, _, DBErr := database.GetUserByPhone(reqData.UserPhone, nil)
+	if DBErr != nil {
+		return 500, ResData{
+			State:  "Failde",
+			Msg:    "Get GetUserByPhone Failed",
+			Detail: err.Error(),
+		}
+	}
+
+	if reqData.NickName != nickName {
+		return 400, ResData{
+			State: "Failde",
+			Msg:   "Invilde Parameter",
+		}
+	}
+
+	if DBErr := database.AddUser(reqData.LineName, UserID, nil); DBErr != nil {
+		return 500, ResData{
+			State:  "Failde",
+			Msg:    "AddUser Failed",
+			Detail: err.Error(),
+		}
+	}
+
+	return 200, ResData{
+		State: "Success",
+		Msg:   "User Add Success",
 	}
 }

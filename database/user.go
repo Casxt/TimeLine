@@ -38,7 +38,11 @@ func GetUserByMail(Mail string) (ID, Phone, NickName, Gender, Salt, SaltPass, Pr
 }
 
 //GetUserByPhone Found User By Phone
-func GetUserByPhone(Phone string) (ID, Mail, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, ErrorMsg error) {
+//Err :
+//DataBase Connection Error
+//User Not Exist
+//DBErr
+func GetUserByPhone(Phone string, course *sql.Tx) (ID, Mail, NickName, Gender, Salt, SaltPass, ProfilePic string, SignInTime time.Time, DBErr error) {
 	course, selfCourse, DBErr := Begin(nil)
 	if DBErr != nil {
 		log.Println(DBErr.Error())
@@ -54,8 +58,8 @@ func GetUserByPhone(Phone string) (ID, Mail, NickName, Gender, Salt, SaltPass, P
 		case "sql: no rows in result set":
 			return "", "", "", "", "", "", "", time.Time{}, errors.New("User Not Exist")
 		default:
-			log.Println(DBErr.Error())
-			return "", "", "", "", "", "", "", time.Time{}, errors.New("Unknow Error")
+			log.Println("GetUserByPhone", DBErr.Error())
+			return "", "", "", "", "", "", "", time.Time{}, DBErr
 		}
 	}
 

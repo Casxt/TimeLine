@@ -114,7 +114,7 @@ func GetUserInfo(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 		Phone: reqData.Operator,
 	}
 	_, resData.Mail, resData.NickName, resData.Gender, _, _, resData.ProfilePic, resData.SignInTime, err =
-		database.GetUserByPhone(reqData.Operator)
+		database.GetUserByPhone(reqData.Operator, nil)
 	if err != nil {
 		log.Println(err.Error())
 		return 400, ResData{

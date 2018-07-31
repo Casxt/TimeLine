@@ -63,7 +63,7 @@ func CheckAccount(res http.ResponseWriter, req *http.Request) (status int, jsonR
 	var ID, Phone, NickName, Salt, SaltPass string
 	switch {
 	case phoneRegexp.MatchString(data.Account):
-		ID, _, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByPhone(data.Account)
+		ID, _, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByPhone(data.Account, nil)
 		Phone = data.Account
 	case mailRegexp.MatchString(data.Account):
 		ID, Phone, NickName, _, Salt, SaltPass, _, _, err = database.GetUserByMail(data.Account)

@@ -71,6 +71,7 @@ func CreateGroupTable(course *sql.Tx) (err error) {
 		FOREIGN KEY ('UserID') REFERENCES 'User' ('ID'),
 		INDEX ('LineID'),
 		INDEX ('UserID'),
+		UNIQUE INDEX ('LineID','UserID'),
 		PRIMARY KEY ('ID')
 		)`
 	sqlCmd = strings.Replace(sqlCmd, "'", "`", -1)
