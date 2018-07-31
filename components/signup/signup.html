@@ -33,6 +33,7 @@
 
         if (json.State == "Success") {
             B.Alert("btn-success btn btn-lg btn-block mt-5 disabled", json.Msg, 1000);
+            location.href="/SignIn";
         } else {
             B.Alert("btn-warning btn btn-lg btn-block mt-5 disabled", json.Msg, 3000);
         }
