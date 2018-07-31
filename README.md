@@ -233,7 +233,7 @@ go bulid
 ```
 
 ### GetSlices
-获取某个Line的GetSlices
+获取某个Line的全部Slice
 #### 请求格式:
 ``` golang
 {
