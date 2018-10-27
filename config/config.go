@@ -12,14 +12,14 @@ type TLSStrut struct {
 	Key  string
 }
 
-//ConfigStrut decide struct of config
-type ConfigStrut struct {
+//ConfigStruct decide struct of config
+type ConfigStruct struct {
 	Sql         SqlConfig
 	ProjectPath string
 	TLS         TLSStrut
 }
 
-var configStrut ConfigStrut
+var configStrut ConfigStruct
 
 //Sql contain sql config
 //Using in database
