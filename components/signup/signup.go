@@ -77,16 +77,24 @@ func SignUp(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 
 	if data.HashPass == "" {
 		//计算一个初始的随机pass并Hash
-		mail.SendMail(data.Mail, "TimeLine 注册验证", "<h1>TimeLine密码:"+Pass+"</h1>", nil)
+		if mail.SendMail(data.Mail, "TimeLine 注册验证", "<h1>TimeLine密码:"+Pass+"</h1>", nil) != nil {
+			return 409, map[string]string{
+				"State": "Failed",
+				"Msg":   "SendMail unKnow failed",
+			}
+		}
 	} else {
 		//计算一个初始的随机pass
-		mail.SendMail(data.Mail, "TimeLine 注册验证", "<h1>您已注册TimeLine</h1>", nil)
+		if mail.SendMail(data.Mail, "TimeLine 注册验证", "<h1>您已注册TimeLine</h1>", nil) != nil {
+			return 409, map[string]string{
+				"State": "Failed",
+				"Msg":   "SendMail unKnow failed",
+			}
+		}
 	}
 
-	jsonRes = map[string]string{
+	return 200, map[string]string{
 		"State": "Success",
 		"Msg":   "Create User Successful",
 	}
-
-	return 200, jsonRes
 }
