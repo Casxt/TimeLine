@@ -7,16 +7,23 @@ import (
 )
 
 //TLS config struct
-type TLSStrut struct {
+type TLSStruct struct {
 	Cert string
 	Key  string
+}
+
+//
+type WeiXinAppStruct struct {
+	Id      string
+	Secrete string
 }
 
 //ConfigStruct decide struct of config
 type ConfigStruct struct {
 	Sql         SqlConfig
 	ProjectPath string
-	TLS         TLSStrut
+	TLS         TLSStruct
+	WeiXinApp   WeiXinAppStruct
 }
 
 var configStrut ConfigStruct
@@ -26,7 +33,7 @@ var configStrut ConfigStruct
 var (
 	Sql         SqlConfig
 	ProjectPath string
-	TLS         TLSStrut
+	TLS         TLSStruct
 )
 
 //Load Config file

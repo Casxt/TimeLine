@@ -5,7 +5,9 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"html"
+	"io/ioutil"
 	"math/big"
 	"net/http"
 	"net/url"
@@ -262,6 +264,45 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	//Escape, Phone is pure number and no need to escape
 	http.SetCookie(res, &http.Cookie{Name: "Phone", Value: Phone, Path: "/", MaxAge: 30 * 86400})
 	http.SetCookie(res, &http.Cookie{Name: "NickName", Value: html.EscapeString(url.QueryEscape(NickName)), Path: "/", MaxAge: 30 * 86400})
+
+	return 200, map[string]string{
+		"State":     "Success",
+		"Msg":       "Sign In Success",
+		"SessionID": session.ID(),
+		"Phone":     Phone,
+		"NickName":  NickName,
+	}
+}
+
+//MiniaSignIn 微信小程序登录接口
+func MiniaSignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+	type Data struct {
+		UserCode string //用户身份码
+	}
+	var data Data
+
+	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
+		return status, jsonRes
+	}
+
+	resp, err := http.Get("https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code")
+	if err != nil {
+		// handle error
+	}
+
+	if status, jsonRes = tools.GetGetJSON(resp, &data); status != 200 {
+		return status, jsonRes
+	}
+
+	session := session.GetByCookie(req)
+	if session == nil {
+		jsonRes = map[string]string{
+			"State": "Failde",
+			"Msg": `Session not found, you should have SessionID first,
+			 call CheckAccount before you call this api`,
+		}
+		return 400, jsonRes
+	}
 
 	return 200, map[string]string{
 		"State":     "Success",
