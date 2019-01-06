@@ -21,20 +21,6 @@ func GetPostJSON(req *http.Request, data interface{}) (status int, jsonRes map[s
 	return 200, nil
 }
 
-//GetGetJSON get json in resp, by using data.
-//return 400 and errinfo if err
-//ruturn 200 if success
-func GetGetJSON(resp *http.Response, data interface{}) (status int, jsonRes map[string]string) {
-	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
-		jsonRes = map[string]string{
-			"State": "Failed",
-			"Msg":   "Invalid Json when auth with WeiXin",
-		}
-		return 400, jsonRes
-	}
-	return 200, nil
-}
-
 //GetLoginStateOfOperator will check wether user have login and check Operator
 //and return ID and session
 func GetLoginStateOfOperator(req *http.Request, SssionID, Operator string) (UserID string, Session session.IO) {

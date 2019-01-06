@@ -15,6 +15,8 @@ func CreateUserTable(course *sql.Tx) (err error) {
 	defer GraceCommit(course, selfCourse, err)
 	sqlCmd := `CREATE TABLE 'User' (
 		'ID'  int NOT NULL AUTO_INCREMENT ,
+		'OpenID'  varchar(32) CHARACTER SET utf8 DEFAULT NULL,
+		'UnionID'  varchar(32) CHARACTER SET utf8 DEFAULT NULL,
 		'Phone'  varchar(15) CHARACTER SET utf8 NOT NULL,
 		'Mail'  varchar(128) CHARACTER SET utf8 NOT NULL,
 		'NickName'  varchar(128) CHARACTER SET utf8 NOT NULL,
@@ -23,6 +25,8 @@ func CreateUserTable(course *sql.Tx) (err error) {
 		'SaltPass'  char(64) CHARACTER SET utf8 NOT NULL,
 		'ProfilePic'  char(64) CHARACTER SET utf8 DEFAULT "" NOT NULL,
 		'Time'  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+		UNIQUE INDEX ('OpenID'),
+		UNIQUE INDEX ('UnionID'),
 		UNIQUE INDEX ('Phone'),
 		UNIQUE INDEX ('Mail'),
 		PRIMARY KEY ('ID')

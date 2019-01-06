@@ -5,18 +5,15 @@ import (
 	"crypto/cipher"
 	"crypto/rand"
 	"encoding/hex"
-	"fmt"
-	"html"
-	"io/ioutil"
-	"math/big"
-	"net/http"
-	"net/url"
-	"regexp"
-
 	"github.com/Casxt/TimeLine/database"
 	"github.com/Casxt/TimeLine/session"
 	"github.com/Casxt/TimeLine/static"
 	"github.com/Casxt/TimeLine/tools"
+	"html"
+	"math/big"
+	"net/http"
+	"net/url"
+	"regexp"
 )
 
 //Route Return The static to Show
@@ -134,8 +131,8 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	if status, jsonRes = tools.GetPostJSON(req, &data); status != 200 {
 		return status, jsonRes
 	}
-	session := session.GetByCookie(req)
-	if session == nil {
+	sess := session.GetByCookie(req)
+	if sess == nil {
 		jsonRes = map[string]string{
 			"State": "Failde",
 			"Msg": `Session not found, you should have SessionID first,
@@ -146,33 +143,33 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 
 	var SaltPass, SignInVerify string
 	var ok bool
-	if SaltPass, ok = session.Get("SaltPass"); !ok {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+	if SaltPass, ok = sess.Get("SaltPass"); !ok {
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SaltPass of Session not found",
 		}
 	}
-	session.Delete(SaltPass)
-	if SignInVerify, ok = session.Get("SignInVerify"); !ok {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+	sess.Delete(SaltPass)
+	if SignInVerify, ok = sess.Get("SignInVerify"); !ok {
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "SignInVerify of Session not found",
 		}
 	}
-	session.Delete(SignInVerify)
+	sess.Delete(SignInVerify)
 	var key, ciphertext, nonce []byte
 	var err error
 
 	if key, err = hex.DecodeString(SaltPass); err != nil {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter SaltPass",
@@ -180,9 +177,9 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 
 	if ciphertext, err = hex.DecodeString(data.Encrypted); err != nil {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter Encrypted",
@@ -190,9 +187,9 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	}
 
 	if nonce, err = hex.DecodeString(data.IV); err != nil {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Invaild Parameter IV",
@@ -211,56 +208,56 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 
 	plaintext, err := aesgcm.Open(nil, nonce, ciphertext, nil)
 	if err != nil {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Decrypted failed",
 		}
 	}
 	if string(plaintext) != SignInVerify {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Compare failed",
 		}
 	}
-	ID, ok := session.Get("ID")
+	ID, ok := sess.Get("ID")
 	if !ok {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Timeout",
 		}
 	}
-	NickName, ok := session.Get("NickName")
+	NickName, ok := sess.Get("NickName")
 	if !ok {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Timeout",
 		}
 	}
-	Phone, ok := session.Get("Phone")
+	Phone, ok := sess.Get("Phone")
 	if !ok {
-		session.Delete("ID")
-		session.Delete("NickName")
-		session.Delete("Phone")
+		sess.Delete("ID")
+		sess.Delete("NickName")
+		sess.Delete("Phone")
 		return 400, map[string]string{
 			"State": "Failde",
 			"Msg":   "Timeout",
 		}
 	}
-	session.Put("ID", ID, 60*60*24*30)
-	session.Put("NickName", NickName, 60*60*24*30)
-	session.Put("Phone", Phone, 60*60*24*30)
+	sess.Put("ID", ID, 60*60*24*30)
+	sess.Put("NickName", NickName, 60*60*24*30)
+	sess.Put("Phone", Phone, 60*60*24*30)
 	//Escape, Phone is pure number and no need to escape
 	http.SetCookie(res, &http.Cookie{Name: "Phone", Value: Phone, Path: "/", MaxAge: 30 * 86400})
 	http.SetCookie(res, &http.Cookie{Name: "NickName", Value: html.EscapeString(url.QueryEscape(NickName)), Path: "/", MaxAge: 30 * 86400})
@@ -268,14 +265,14 @@ func SignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map
 	return 200, map[string]string{
 		"State":     "Success",
 		"Msg":       "Sign In Success",
-		"SessionID": session.ID(),
+		"SessionID": sess.ID(),
 		"Phone":     Phone,
 		"NickName":  NickName,
 	}
 }
 
-//MiniaSignIn 微信小程序登录接口
-func MiniaSignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
+//WeiXinSignIn 微信小程序登录接口
+func WeiXinSignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRes map[string]string) {
 	type Data struct {
 		UserCode string //用户身份码
 	}
@@ -285,29 +282,35 @@ func MiniaSignIn(res http.ResponseWriter, req *http.Request) (status int, jsonRe
 		return status, jsonRes
 	}
 
-	resp, err := http.Get("https://api.weixin.qq.com/sns/jscode2session?appid=APPID&secret=SECRET&js_code=JSCODE&grant_type=authorization_code")
-	if err != nil {
-		// handle error
-	}
-
-	if status, jsonRes = tools.GetGetJSON(resp, &data); status != 200 {
+	var OpenID, SessionKey string
+	if OpenID, SessionKey, _, status, jsonRes = tools.GetWeiXinUser(data.UserCode); status != 200 {
 		return status, jsonRes
 	}
 
-	session := session.GetByCookie(req)
-	if session == nil {
-		jsonRes = map[string]string{
-			"State": "Failde",
-			"Msg": `Session not found, you should have SessionID first,
-			 call CheckAccount before you call this api`,
+	ID, _, Phone, _, NickName, _, _, _, _, _, DBErr := database.GetUserByOpenID(OpenID)
+	if DBErr != nil {
+		//"User Not Exist"
+		return 400, map[string]string{
+			"State": "Failed",
+			"Msg":   DBErr.Error(),
 		}
-		return 400, jsonRes
 	}
 
+	sess := session.New(req)
+	if sess == nil {
+		return 500, map[string]string{
+			"State": "Failed",
+			"Msg":   "Unknown error",
+		}
+	}
+	sess.Put("ID", ID, 60*60*24*30)
+	sess.Put("NickName", NickName, 60*60*24*30)
+	sess.Put("Phone", Phone, 60*60*24*30)
+	sess.Put("WeiXinSession", SessionKey, 60*60*24*30)
 	return 200, map[string]string{
 		"State":     "Success",
 		"Msg":       "Sign In Success",
-		"SessionID": session.ID(),
+		"SessionID": sess.ID(),
 		"Phone":     Phone,
 		"NickName":  NickName,
 	}

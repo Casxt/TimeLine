@@ -26,7 +26,7 @@ type ConfigStruct struct {
 	WeiXinApp   WeiXinAppStruct
 }
 
-var configStrut ConfigStruct
+var configStruct ConfigStruct
 
 //Sql contain sql config
 //Using in database
@@ -34,6 +34,7 @@ var (
 	Sql         SqlConfig
 	ProjectPath string
 	TLS         TLSStruct
+	WeiXinApp   WeiXinAppStruct
 )
 
 //Load Config file
@@ -43,11 +44,12 @@ func Load(file string) {
 		panic(err)
 	}
 	log.Println("Read Config \r\n", string(data))
-	err = json.Unmarshal(data, &configStrut)
+	err = json.Unmarshal(data, &configStruct)
 	if err != nil {
 		panic(err)
 	}
-	Sql = configStrut.Sql
-	ProjectPath = configStrut.ProjectPath
-	TLS = configStrut.TLS
+	Sql = configStruct.Sql
+	ProjectPath = configStruct.ProjectPath
+	TLS = configStruct.TLS
+	WeiXinApp = configStruct.WeiXinApp
 }
